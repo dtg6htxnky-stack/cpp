@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>template&lt;InterviewPrep&gt;</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root{
+  --ink:#0B0E13;
+  --panel:#12161E;
+  --panel-2:#171C26;
+  --paper:#E7E9EE;
+  --mute:#8A93A3;
+  --faint:#525A69;
+  --line:#232936;
+  --amber:#E7A33E;
+  --amber-dim:#5A4726;
+  --teal:#4FB6A8;
+  --teal-dim:#1F4A44;
+  --font-mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--paper);
+  font-family:var(--font-sans);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+::selection{background:var(--amber-dim); color:var(--paper);}
+a{color:var(--amber);}
+
+header{ max-width:920px; margin:0 auto; padding:36px 24px 18px; display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; border-bottom:1px solid var(--line); }
+h1{ font-family:var(--font-mono); font-weight:600; font-size:20px; margin:0; letter-spacing:-0.01em; }
+.progress-text{ font-family:var(--font-mono); font-size:13px; color:var(--mute); }
+.progress-text b{ color:var(--teal); font-weight:600; }
+
+main{ max-width:920px; margin:0 auto; padding:18px 24px 80px; }
+.part-divider{ font-family:var(--font-mono); font-size:12px; letter-spacing:.03em; text-transform:uppercase; color:var(--faint); margin:28px 0 10px; }
+.part-divider:first-child{ margin-top:0; }
+
+.card{ background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:10px; overflow:hidden; transition:border-color .2s, opacity .2s; }
+.card.done{ border-color:var(--teal-dim); }
+.card.done .card-head{ background:linear-gradient(180deg, rgba(79,182,168,.06), transparent); }
+.card-head{ display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; list-style:none; }
+.card-head::-webkit-details-marker{ display:none; }
+.chk{ flex:0 0 auto; width:20px; height:20px; border-radius:5px; border:1.5px solid var(--faint); display:flex; align-items:center; justify-content:center; font-size:12px; color:transparent; transition:all .15s; }
+.card.done .chk{ background:var(--teal); border-color:var(--teal); color:var(--ink); }
+.chk:hover{ border-color:var(--teal); }
+.num{ font-family:var(--font-mono); font-size:12px; color:var(--faint); flex:0 0 auto; width:26px; }
+.card-title{ flex:1 1 auto; min-width:0; }
+.card-title .t{ font-size:15px; font-weight:600; color:var(--paper); }
+.card.done .card-title .t{ color:var(--mute); text-decoration:line-through; text-decoration-color:var(--teal-dim); }
+.chips{ display:flex; gap:6px; flex:0 0 auto; }
+.chip{ font-family:var(--font-mono); font-size:11px; padding:3px 8px; border-radius:4px; border:1px solid var(--line); color:var(--mute); white-space:nowrap; }
+.chip.std{ color:var(--amber); border-color:var(--amber-dim); }
+.arrow{ color:var(--faint); font-size:12px; transition:transform .2s; flex:0 0 auto; }
+.card[open] .arrow{ transform:rotate(90deg); }
+
+.card-body{ padding:2px 16px 20px 58px; color:var(--mute); font-size:14.5px; }
+.card-body h4{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:.03em; text-transform:uppercase; color:var(--faint); margin:16px 0 6px; font-weight:600;}
+.card-body h4:first-of-type{ margin-top:6px; }
+.primer{ font-size:14.5px; color:var(--paper); background:var(--panel-2); border:1px solid var(--line); border-left:2px solid var(--teal-dim); border-radius:0 6px 6px 0; padding:10px 12px; margin:6px 0 14px; }
+.card-body pre{ font-family:var(--font-mono); font-size:13px; background:var(--panel-2); border:1px solid var(--line); border-radius:6px; padding:12px 14px; overflow-x:auto; color:#C9D6E3; margin:0 0 6px; white-space:pre-wrap; word-break:break-word; }
+.card-body pre.expected{ color:var(--teal); border-color:var(--teal-dim); }
+.card-body ul{ margin:0 0 14px; padding-left:18px; }
+.card-body li{ margin-bottom:6px; }
+.card-body li::marker{ color:var(--faint); }
+
+.validates{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 4px; }
+.vtag{ font-family:var(--font-mono); font-size:11px; color:var(--teal); background:var(--teal-dim); border-radius:4px; padding:3px 7px; }
+
+.note{ font-size:13px; color:var(--faint); margin:14px 0 0; padding:8px 10px; border-left:2px solid var(--amber-dim); background:rgba(231,163,62,.05); }
+
+.hints-toggle{ font-family:var(--font-mono); font-size:12px; background:transparent; color:var(--amber); border:1px solid var(--amber-dim); border-radius:4px; padding:5px 10px; cursor:pointer; margin:2px 0 12px; display:inline-block; transition:all .15s; }
+.hints-toggle:hover{ background:var(--amber-dim); color:var(--paper); }
+.hints-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+.hint-list{ margin:0 0 14px; padding-left:18px; }
+.hint-list li{ display:none; }
+.hint-list li.revealed{ display:list-item; animation:fadeInHint .25s ease forwards; }
+@keyframes fadeInHint{ from{ opacity:0; transform:translateY(2px); } to{ opacity:1; transform:none; } }
+
+.driver-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:16px 0 6px; }
+.driver-head h4{ margin:0; }
+.copy-btn{ font-family:var(--font-mono); font-size:11px; background:var(--panel-2); color:var(--mute); border:1px solid var(--line); border-radius:4px; padding:4px 9px; cursor:pointer; white-space:nowrap; transition:all .15s; }
+.copy-btn:hover{ color:var(--paper); border-color:var(--faint); }
+.copy-btn.copied{ color:var(--teal); border-color:var(--teal-dim); }
+.copy-btn:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+
+.chk:focus-visible, .card summary:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+
+.section-intro{ font-size:13.5px; color:var(--faint); margin:6px 0 16px; max-width:70ch; }
+.reveal-toggle{ font-family:var(--font-mono); font-size:12px; background:transparent; color:var(--teal); border:1px solid var(--teal-dim); border-radius:4px; padding:5px 10px; cursor:pointer; margin:8px 0 0; display:inline-block; transition:all .15s; }
+.reveal-toggle:hover{ background:var(--teal-dim); color:var(--paper); }
+.reveal-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
+.answer-box{ display:none; font-size:14.5px; color:var(--paper); background:var(--panel-2); border:1px solid var(--teal-dim); border-left:2px solid var(--teal); border-radius:0 6px 6px 0; padding:10px 12px; margin:10px 0 0; }
+.answer-box.shown{ display:block; }
+.concept-card .card-body{ padding-left:58px; }
+
+@media (max-width:600px){
+  .card-body{ padding-left:16px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>template&lt;InterviewPrep&gt;</h1>
+  <div class="progress-text"><b id="stat-progress">0</b> / <span id="stat-total">23</span> checked off</div>
+</header>
+
+<main id="main"></main>
+
+<script>
+const PARTS = {
+  foundations: { label: "Foundations" },
+  cpp11:       { label: "C++11" },
+  cpp14:       { label: "C++14" },
+  cpp17:       { label: "C++17" },
+  cpp20:       { label: "C++20" },
+};
+
+const EXERCISES = [
+{id:1, part:"foundations", std:"pre-11",
+ title:"Function template basics + deduction",
+ primer:"Function templates let a single function work across multiple types, deducing the template parameter(s) from the arguments at the call site instead of you specifying them explicitly.",
+ includes:["iostream","string"],
+ hints:["Template argument deduction works per-parameter — when two parameters share the same template type T, both arguments must deduce to the exact same type, which is why calling with an int and a double fails.","An explicit template argument like myMax<double>(3, 3.5) bypasses deduction for that call entirely.","For the auto-return version, remember 'auto' as a return type lets the compiler deduce it from the return statement — no trailing return syntax needed."],
+ bullets:[
+  "Write a two-argument function template that returns the larger of its two arguments.",
+  "Call it with ints, doubles, and std::strings.",
+  "Call it with one int and one double argument — it won't compile. Explain why, then fix it three separate ways: an explicit template argument, a version with two independent template parameters and a trailing return type, and a version using an auto return type."
+ ],
+ validates:["argument deduction","implicit conversion limits"],
+ driver:`int main(){\n  std::cout << myMax(3, 7) << '\\n';\n  std::cout << myMax(3.5, 2.25) << '\\n';\n  std::cout << myMax(std::string("apple"), std::string("banana")) << '\\n';\n  std::cout << myMax<double>(3, 3.5) << '\\n';\n}`,
+ expected:"7\n3.5\nbanana\n3.5"},
+
+{id:2, part:"foundations", std:"pre-11",
+ title:"Class template + member function templates",
+ primer:"Class templates parameterize an entire type on one or more parameters, including non-type parameters like a compile-time size; a member function can carry its own separate template parameter distinct from the class's.",
+ includes:["iostream"],
+ hints:["A non-type template parameter like size_t N lets you store a plain array (T data[N]) as a member, no dynamic allocation needed.","The member template cast<U>() needs its own template<typename U> line above it, separate from the class's own template<typename T, size_t N>.","Provide both a non-const and a const overload of operator[] — the compiler picks based on the constness of the object being indexed."],
+ bullets:[
+  "Build a stack-allocated fixed-size vector, parameterized on element type and a compile-time size, that supports brace-initialization of its elements.",
+  "Give it a member template that returns a copy of itself with every element converted to a different type via static_cast.",
+  "Give it element access with both const and non-const overloads."
+ ],
+ validates:["non-type params","member templates","const-correctness"],
+ driver:`int main(){\n  FixedVector<int,3> v{1,2,3};\n  v[1] = 20;\n  std::cout << v[0] << " " << v[1] << " " << v[2] << "\\n";\n  auto d = v.cast<double>();\n  std::cout << d[0] << " " << d[1] << " " << d[2] << "\\n";\n}`,
+ expected:"1 20 3\n1 20 3"},
+
+{id:3, part:"foundations", std:"pre-11",
+ title:"Explicit / partial specialization",
+ primer:"Template specialization lets you swap in a different implementation for specific arguments (full specialization) or a pattern of arguments (partial specialization) — but partial specialization only exists for class templates, not function templates.",
+ includes:["iostream","string","vector"],
+ hints:["Full specialization syntax is template<> struct TypeName<int> { ... }; — there's no template parameter list left to fill in.","Partial specialization keeps a parameter open, e.g. template<typename T> struct TypeName<T*> { ... }; matches any pointer type.","Function templates can be overloaded but not partially specialized — that's exactly why the pointer trick works for a class template but won't compile as a function partial specialization."],
+ bullets:[
+  "Write a class template that returns a human-readable name for a type, with full specializations for int, double, bool, and std::string (using the base names \"int\", \"double\", \"bool\", \"string\").",
+  "Add a partial specialization for pointer types that appends \" pointer\" to the pointee's name.",
+  "Add a partial specialization for std::vector<T> that returns \"vector of \" followed by T's name.",
+  "Try writing the pointer case as a partial specialization of a function template instead of a class template — read why the compiler rejects it."
+ ],
+ validates:["full vs partial spec","class-template-only rule"],
+ driver:`int main(){\n  std::cout << TypeName<int>::get() << "\\n";\n  std::cout << TypeName<double>::get() << "\\n";\n  std::cout << TypeName<bool>::get() << "\\n";\n  std::cout << TypeName<std::string>::get() << "\\n";\n  std::cout << TypeName<int*>::get() << "\\n";\n  std::cout << TypeName<std::vector<int>>::get() << "\\n";\n}`,
+ expected:"int\ndouble\nbool\nstring\nint pointer\nvector of int"},
+
+{id:4, part:"cpp11", std:"C++11",
+ title:"Variadic templates + parameter packs",
+ primer:"A parameter pack lets a template accept any number of arguments of any types, processed through recursive instantiation or fold expressions rather than a fixed argument list.",
+ includes:["iostream"],
+ hints:["sizeof...(Args) gives you the pack size directly — no recursion needed for count().","Build the tuple with one 'leaf' value per element, either through recursive inheritance from single-element base classes or recursive composition (a head plus a smaller Tuple of the rest).","get<N>() typically recurses: get<N> on a Tuple<Head, Rest...> defers to get<N-1> on the Rest... part until N reaches 0."],
+ bullets:[
+  "Write a constexpr function template that returns the number of types in a parameter pack.",
+  "Build a minimal tuple type from scratch, supporting construction from a list of values.",
+  "Add a free function that retrieves the Nth element by index, implemented via recursive template instantiation."
+ ],
+ validates:["parameter packs","recursive instantiation","sizeof..."],
+ driver:`int main(){\n  std::cout << count<int,double,char>() << "\\n";\n  Tuple<int,double,std::string> t{1, 2.5, std::string("hi")};\n  std::cout << get<0>(t) << " " << get<1>(t) << " " << get<2>(t) << "\\n";\n}`,
+ expected:"3\n1 2.5 hi"},
+
+{id:5, part:"cpp11", std:"C++11",
+ title:"Alias templates (using)",
+ primer:"using-based alias templates give a template a shorter, parameterized name (e.g. Ptr<T> in place of unique_ptr<T>), doing at compile time what pre-C++11 required a helper struct and typedef for.",
+ includes:["iostream","memory"],
+ hints:["The alias template is one line: template<typename T> using Ptr = std::unique_ptr<T>;","The pre-C++11 workaround wraps a typedef inside a struct, and every use site needs typename PtrT<T>::type instead of just Ptr<T>."],
+ bullets:[
+  "Write an alias template that gives a shorter name to std::unique_ptr<T>.",
+  "Write the pre-C++11 workaround: a struct wrapper with a nested typedef, and confirm every use site needs a typename ... ::type prefix that the alias template doesn't."
+ ],
+ validates:["alias templates","typedef limitation"],
+ driver:`int main(){\n  Ptr<int> p = std::make_unique<int>(42);\n  std::cout << *p << "\\n";\n}`,
+ expected:"42"},
+
+{id:6, part:"cpp11", std:"C++11",
+ title:"Perfect forwarding + universal references",
+ primer:"A forwarding reference (T&& where T is itself deduced) can bind to both lvalues and rvalues, and std::forward preserves whichever value category was originally passed in as arguments travel through a layer of code.",
+ includes:["iostream"],
+ hints:["The factory's parameter should be T&& where T is itself a deduced template parameter — that's what makes it a forwarding reference rather than a plain rvalue reference.","Inside the factory, pass the arguments along with std::forward<Args>(args)..., or the value-category information gets lost.","In an already-instantiated class template, T&& is a fixed, non-deduced type at that point — so it's an ordinary rvalue reference, not a forwarding reference."],
+ bullets:[
+  "Implement a minimal make_unique-style factory that forwards its arguments to a constructor.",
+  "Define a type with three constructor overloads — for a non-const lvalue reference, a const lvalue reference, and an rvalue reference — each printing which one ran.",
+  "Call your factory with an lvalue, a const lvalue, and a literal, and confirm each one reaches the matching overload.",
+  "Explain why the forwarding parameter in your factory is a forwarding reference, while the same T&& syntax in a member function of an already-instantiated class template would not be."
+ ],
+ validates:["forwarding refs","std::forward","reference collapsing"],
+ driver:`struct Widget {\n  Widget(int&) { std::cout << "ctor: lvalue\\n"; }\n  Widget(int const&) { std::cout << "ctor: const-lvalue\\n"; }\n  Widget(int&&) { std::cout << "ctor: rvalue\\n"; }\n};\n\nint main(){\n  int x = 5;\n  const int cx = 10;\n  auto a = myMakeUnique<Widget>(x);\n  auto b = myMakeUnique<Widget>(cx);\n  auto c = myMakeUnique<Widget>(20);\n}`,
+ expected:"ctor: lvalue\nctor: const-lvalue\nctor: rvalue"},
+
+{id:7, part:"cpp11", std:"C++11",
+ title:"extern template + explicit instantiation",
+ primer:"Explicit instantiation forces a template to be compiled once for a specific type; extern template tells other translation units not to re-instantiate it themselves, trading some flexibility for build-time savings.",
+ includes:["iostream"],
+ hints:["Explicit instantiation syntax is template class MyContainer<int>; in the .cpp file — no extern keyword there.","In the second translation unit, write extern template class MyContainer<int>; before using it, telling the compiler not to re-instantiate it there.","To actually see the compile-time savings, you need multiple .cpp files that each use MyContainer<int>, timed with and without the extern declaration."],
+ bullets:[
+  "Write a small container class template with add() and sum() methods, split across a header and a source file.",
+  "Explicitly instantiate it for int in the source file, and declare it extern template in a second translation unit that uses it.",
+  "Time a from-scratch build of a small multi-file project with and without this, and compare."
+ ],
+ validates:["explicit instantiation","build cost","ODR / linking"],
+ driver:`int main(){\n  MyContainer<int> c;\n  c.add(5); c.add(10);\n  std::cout << c.sum() << "\\n";\n}`,
+ expected:"15",
+ note:"The real lesson here — reduced compile time from one shared instantiation across TUs — doesn't show up in stdout. This driver only checks that the container works. Verify the extern-template mechanic separately, e.g. with nm on the object files or by timing the build."},
+
+{id:8, part:"cpp11", std:"C++11",
+ title:"decltype + trailing return types",
+ primer:"decltype inspects the declared type of an expression without evaluating it; trailing return syntax lets a function's return type be written after its parameter list, where it can reference those parameters.",
+ includes:["iostream"],
+ hints:["Trailing return syntax looks like: template<typename A, typename B> auto add(A a, B b) -> decltype(a + b) { return a + b; }","decltype on a bare identifier gives its declared type, but decltype on a parenthesized expression treats it as an lvalue expression and can yield a reference type instead.","Try decltype((x)) versus decltype(x) on the same variable inside a function to see the parenthesization difference directly."],
+ bullets:[
+  "Write a function template that adds two values of possibly-different types, using a trailing return type derived from decltype of the addition expression.",
+  "Compare decltype of the bare expression against decltype of the same expression wrapped in an extra set of parentheses, and explain why they can differ.",
+  "Construct a case involving a reference-returning expression where that difference actually changes behavior."
+ ],
+ validates:["decltype rules","trailing return","the paren trap"],
+ driver:`int main(){\n  std::cout << add(2, 3.5) << "\\n";\n}`,
+ expected:"5.5"},
+
+{id:9, part:"cpp14", std:"C++14",
+ title:"Generic lambdas",
+ primer:"A lambda with auto parameters has its call operator implicitly turned into a template, letting one lambda body work across different argument types.",
+ includes:["iostream","string"],
+ hints:["auto in a lambda's parameter list makes its operator() a template — that's literally what 'generic lambda' means.","The hand-written struct equivalent needs a templated operator(): template<typename A, typename B> auto operator()(A a, B b) const { return a + b; }"],
+ bullets:[
+  "Write a lambda with auto parameters that adds its two arguments.",
+  "Call it with ints, doubles, and std::strings.",
+  "Desugar it by hand: write a struct with a templated call operator that behaves identically, and confirm the two are interchangeable."
+ ],
+ validates:["generic lambdas","operator() templates"],
+ driver:`int main(){\n  auto adder = [](auto a, auto b){ return a + b; };\n  std::cout << adder(2, 3) << "\\n";\n  std::cout << adder(2.5, 1.5) << "\\n";\n  std::cout << adder(std::string("foo"), std::string("bar")) << "\\n";\n}`,
+ expected:"5\n4\nfoobar"},
+
+{id:10, part:"cpp14", std:"C++14",
+ title:"decltype(auto) and return deduction",
+ primer:"decltype(auto) reapplies decltype's exact-type rules — including references — to a return expression, whereas plain auto always deduces a stripped-down value type.",
+ includes:["iostream"],
+ hints:["decltype(auto) re-applies decltype's rules to the return expression, preserving references; plain auto always deduces a value type and strips references.","invoke(getRef) = 42 only compiles if invoke's return type is genuinely int& — swap decltype(auto) for auto and see what breaks."],
+ bullets:[
+  "Write a forwarding wrapper function that calls a callable with forwarded arguments and returns exactly what the callable returns, using decltype(auto) as the return type.",
+  "Swap in a plain auto return type instead, with a callable that returns a reference to an external variable, and show how the observable behavior changes.",
+  "Explain the underlying rule: auto strips references and cv-qualifiers on deduction; decltype(auto) doesn't."
+ ],
+ validates:["decltype(auto)","reference preservation"],
+ driver:`int counter = 0;\nint& getRef(){ return counter; }\n\nint main(){\n  invoke(getRef) = 42;\n  std::cout << counter << "\\n";\n}`,
+ expected:"42"},
+
+{id:11, part:"cpp14", std:"C++14",
+ title:"Variable templates",
+ primer:"A variable template parameterizes a single value on a template parameter, letting you write a constant like pi<T> that resolves per type, used like a variable rather than a function call.",
+ includes:["iostream","iomanip"],
+ hints:["Syntax: template<typename T> constexpr T pi = T(3.14159265358979323846);","Use it like a variable at a specific type — pi<float>, pi<double> — no parentheses, unlike a function template."],
+ bullets:[
+  "Write a variable template that holds the value of pi at whatever floating-point type it's instantiated with.",
+  "Use it at both float and double.",
+  "Before using the standard library's version, hand-roll your own variable template that mimics std::is_same_v, to feel why that kind of convenience alias exists."
+ ],
+ validates:["variable templates"],
+ driver:`int main(){\n  std::cout << std::fixed << std::setprecision(2);\n  std::cout << pi<float> << "\\n";\n  std::cout << pi<double> << "\\n";\n  std::cout << std::boolalpha << is_same_v<int,int> << " " << is_same_v<int,double> << "\\n";\n}`,
+ expected:"3.14\n3.14\ntrue false"},
+
+{id:12, part:"cpp14", std:"C++14",
+ title:"Relaxed constexpr functions",
+ primer:"constexpr marks a function as potentially evaluable at compile time; C++14 loosened the rules so ordinary imperative code — loops, local variables — is allowed inside it, not just a single return expression.",
+ includes:["iostream"],
+ hints:["Before C++14, a constexpr function body could only be a single return statement — no loops, no local mutable variables.","C++14 relaxes that: ordinary imperative code (loops, if statements, local variables) is now allowed inside a constexpr function, as long as it's still computable at compile time when needed."],
+ bullets:[
+  "Write a constexpr function that computes a factorial using a loop and local mutable state — something illegal before C++14's relaxed constexpr rules.",
+  "Write the C++11-legal equivalent, restricted to a single recursive return statement, and compare.",
+  "Use static_assert on both to prove they're evaluated at compile time."
+ ],
+ validates:["constexpr relaxation","loop vs recursion"],
+ driver:`int main(){\n  static_assert(factorial(5) == 120);\n  std::cout << factorial(5) << "\\n";\n}`,
+ expected:"120"},
+
+{id:13, part:"cpp17", std:"C++17",
+ title:"Fold expressions",
+ primer:"A fold expression collapses an entire parameter pack down to a single value by repeatedly applying a binary operator across it, without you writing the recursion by hand.",
+ includes:["iostream"],
+ hints:["A unary fold for summing a pack looks like (args + ...) — try both fold directions and see if parenthesization changes anything here.","Folding over << for printing looks like (std::cout << ... << args), but you'll need to handle separators/spacing yourself since folds don't insert extra characters.","To see left-to-right versus right-to-left folds actually differ, you need a non-associative or order-sensitive operation — plain integer addition won't show a difference, so reach for something like ordered string concatenation instead."],
+ bullets:[
+  "Rewrite a sum-of-a-pack function using a fold expression.",
+  "Write a function that prints every argument in a pack separated by single spaces with a trailing newline, using a fold over the stream-insertion operator.",
+  "Write a function that returns whether every argument in a pack is true, using a fold over logical AND.",
+  "Construct one example where folding the same pack left-to-right versus right-to-left produces genuinely different results, to prove you understand the distinction, not just recite it."
+ ],
+ validates:["unary / binary folds","left vs right fold"],
+ driver:`int main(){\n  std::cout << sum(1,2,3,4) << "\\n";\n  printAll(1, "two", 3.0);\n  std::cout << std::boolalpha << allTrue(true,true,true) << " " << allTrue(true,false,true) << "\\n";\n}`,
+ expected:"10\n1 two 3\ntrue false"},
+
+{id:14, part:"cpp17", std:"C++17",
+ title:"if constexpr",
+ primer:"if constexpr evaluates its condition at compile time and completely discards the untaken branch during instantiation, so that branch never needs to compile for the current type — unlike an ordinary runtime if.",
+ includes:["iostream","string","vector"],
+ hints:["std::is_arithmetic_v<T>, a check for a nested type like value_type or similar, and a catch-all else branch are enough to drive the three-way if constexpr dispatch.","Because if constexpr discards the untaken branch during instantiation, code in that branch never needs to be valid for the current T — unlike a runtime if, where every branch must compile for every call.","Tag dispatch achieves the same effect the old way: overload on a dummy tag type (e.g. std::true_type/std::false_type) selected via a trait, instead of branching inside one function body."],
+ bullets:[
+  "Write a single function template that behaves completely differently depending on whether its argument's type is arithmetic, a std::string, or something else with begin()/end(), using if constexpr branches rather than overloads.",
+  "Reimplement the same logic using C++11-style tag dispatch and compare the verbosity.",
+  "Explain precisely why the untaken if constexpr branch doesn't need to compile for a given type, unlike an ordinary runtime if."
+ ],
+ validates:["if constexpr","discarded branches","vs tag dispatch"],
+ driver:`int main(){\n  process(5);\n  process(std::string("hi"));\n  process(std::vector<int>{1,2,3});\n}`,
+ expected:"arithmetic: 5\nstring: hi\ncontainer of size 3"},
+
+{id:15, part:"cpp17", std:"C++17",
+ title:"CTAD + deduction guides",
+ primer:"Class template argument deduction lets you construct an object of a class template without spelling out its template arguments, inferring them from the constructor call — sometimes with help from an explicit deduction guide.",
+ includes:["iostream","vector"],
+ hints:["For your own wrapper class, a constructor taking a single T value parameter is often enough for CTAD to deduce the class template argument automatically — no explicit deduction guide required in the simple case.","std::vector v1{1} uses list-initialization and picks the initializer_list constructor (one element with value 1), while std::vector<int> v2(1) picks the size constructor (one default-valued element) — that's the source of the difference.","A custom deduction guide looks like a function declaration near the class: template<typename T> Box(T) -> Box<T>;"],
+ bullets:[
+  "Construct a std::pair and a std::vector with no explicit template arguments, relying on constructor-driven deduction.",
+  "Write your own single-member wrapper class template and confirm brace-initializing it from a value deduces the right template argument with no extra code.",
+  "Compare constructing a std::vector from a single brace-enclosed element versus a single parenthesized element, and explain why the two produce different results.",
+  "Write a custom deduction guide for a case where the implicit one deduces the wrong thing."
+ ],
+ validates:["CTAD","deduction guides","constructor-driven deduction"],
+ driver:`int main(){\n  Box b{42};\n  std::cout << b.value << "\\n";\n\n  std::vector v1{1};\n  std::vector<int> v2(1);\n  std::cout << v1.size() << " " << v1[0] << "\\n";\n  std::cout << v2.size() << " " << v2[0] << "\\n";\n}`,
+ expected:"42\n1 1\n1 0"},
+
+{id:16, part:"cpp17", std:"C++17",
+ title:"void_t + the detection idiom",
+ primer:"The detection idiom uses SFINAE with std::void_t to test, at compile time, whether some expression involving a type is well-formed — a way of asking 'does this type support this operation?' as a trait.",
+ includes:["iostream","vector"],
+ hints:["The void_t trick: a primary template inheriting std::false_type, plus a partial specialization using std::void_t<decltype(std::declval<T>().size())>> that inherits std::true_type instead.","if constexpr can branch on has_size<T>::value directly inside a single function template.","The enable_if version needs two separate overloads, each gated with typename std::enable_if<has_size<T>::value, ...>::type, so only one is ever a valid candidate for a given T."],
+ bullets:[
+  "Write a trait that detects, at compile time, whether a type has a .size() member, using a void_t-based partial specialization.",
+  "Use that trait with if constexpr to write a function that prints the size if the argument has one, and a fallback message otherwise.",
+  "Reimplement the same function as two overloads gated by enable_if on the return type instead of if constexpr."
+ ],
+ validates:["detection idiom","void_t","enable_if"],
+ driver:`int main(){\n  print_size(std::vector<int>{1,2,3});\n  print_size(42);\n}`,
+ expected:"size: 3\nno size"},
+
+{id:17, part:"cpp17", std:"C++17",
+ title:"auto non-type template parameters",
+ primer:"Since C++17, a non-type template parameter can be declared auto, letting its type be deduced from whatever value it's instantiated with instead of being fixed to one type up front.",
+ includes:["iostream"],
+ hints:["Declare the parameter as template<auto V> struct Const { static constexpr auto value = V; }; — no separate type parameter needed.","Because V's type is deduced from whatever you instantiate with, Const<5> and Const<'a'> both work without writing out separate type/value parameter pairs."],
+ bullets:[
+  "Write a class template parameterized on a single non-type template parameter declared as auto, exposing that value as a static constexpr member.",
+  "Instantiate it with an int, a char, and an enum value with no need to write separate template parameter lists for each type."
+ ],
+ validates:["auto NTTPs"],
+ driver:`int main(){\n  std::cout << Const<5>::value << "\\n";\n  std::cout << Const<'a'>::value << "\\n";\n}`,
+ expected:"5\na"},
+
+{id:18, part:"cpp17", std:"C++14/17",
+ title:"Template template parameters",
+ primer:"A template template parameter lets a class template take another template — not a concrete type — as one of its parameters, so you can parameterize on 'which container' rather than only 'which element type'.",
+ includes:["iostream","vector","deque"],
+ hints:["The class template's parameter list looks like template<typename T, template<typename...> class Container = std::vector> class Wrapper { Container<T> data; ... };","std::deque and std::vector share enough of an interface (push_back, iteration) that the same insert()/print() implementation should work unmodified for both."],
+ bullets:[
+  "Write a wrapper class template parameterized both on an element type and on which container template to store it in, defaulting to std::vector.",
+  "Give it methods to insert an element and to print all elements space-separated with a trailing newline.",
+  "Instantiate it with both std::vector and std::deque as the container argument."
+ ],
+ validates:["template template params"],
+ driver:`int main(){\n  Wrapper<int> w;\n  w.insert(1); w.insert(2); w.insert(3);\n  w.print();\n\n  Wrapper<int, std::deque> w2;\n  w2.insert(4); w2.insert(5);\n  w2.print();\n}`,
+ expected:"1 2 3\n4 5"},
+
+{id:19, part:"cpp20", std:"C++20",
+ title:"Concepts",
+ primer:"Concepts give named, checkable constraints on template parameters, replacing ad hoc SFINAE tricks with syntax the compiler can check directly and report clear errors against.",
+ includes:["iostream","vector"],
+ hints:["A concept can wrap the same requires-expression as exercise 16: requires(T t) { { t.size() } -> std::convertible_to<std::size_t>; }","Trailing requires clause: template<typename T> requires HasSize<T> void print_size(T const&); abbreviated syntax: void print_size(HasSize auto const&);","Compose concepts with &&: a Container concept could require HasSize<T> plus t.begin()/t.end()."],
+ bullets:[
+  "Redo exercise 16 with a concept instead of the void_t trait, requiring that .size() exists and is convertible to size_t.",
+  "Constrain your print function two ways: a trailing requires clause, and abbreviated function template syntax.",
+  "Compose a second concept from the first plus a requirement that begin() and end() exist.",
+  "Call your function with a type that fails the concept and compare the resulting error message to the void_t version from exercise 16 (this part isn't stdout-checkable — read it yourself)."
+ ],
+ validates:["requires expr vs clause","concept composition","abbreviated templates"],
+ driver:`int main(){\n  print_size(std::vector<int>{1,2,3,4});\n}`,
+ expected:"size: 4"},
+
+{id:20, part:"cpp20", std:"C++20",
+ title:"Template lambdas with explicit template params",
+ primer:"C++20 lets a lambda declare its own explicit template parameter list, giving you a named type inside the lambda body instead of only an opaque auto parameter.",
+ includes:["iostream","vector"],
+ hints:["The syntax is []<typename T>(std::vector<T> const& v){ ... } — the template parameter list goes right after the capture brackets, before the function parameter list.","Because T is now a named type rather than something hidden behind auto, you can use it directly in the body, e.g. sizeof(T)."],
+ bullets:[
+  "Rewrite a generic lambda from exercise 9 to declare its own explicit template parameter instead of relying on auto parameters.",
+  "Use that named type parameter inside the lambda body somewhere an auto parameter couldn't give you access to it — e.g. to print its size."
+ ],
+ validates:["explicit lambda template params"],
+ driver:`int main(){\n  auto f = []<typename T>(std::vector<T> const& v){\n    std::cout << "vector of " << v.size() << " elements, sizeof(T)=" << sizeof(T) << "\\n";\n  };\n  f(std::vector<int>{1,2,3});\n}`,
+ expected:"vector of 3 elements, sizeof(T)=4",
+ note:"Assumes sizeof(int) == 4, true on essentially every mainstream compiler/platform today. If yours differs, just confirm the number matches sizeof(int) on your system."},
+
+{id:21, part:"cpp20", std:"C++20",
+ title:"CRTP — Curiously Recurring Template Pattern",
+ primer:"The Curiously Recurring Template Pattern has a base class template take its own derived class as a parameter, enabling compile-time ('static') polymorphism with no virtual functions or vtable involved.",
+ includes:["iostream","iomanip"],
+ hints:["The base class template takes the derived type as its own parameter, then calls back into it via static_cast<const Derived*>(this)->areaImpl().","Because everything resolves at compile time through static_cast, there's no vtable pointer or virtual dispatch — that's the point of comparing the generated assembly against a virtual-function version.","The free function that accepts 'any shape built this way' should be a function template parameterized on Derived, taking const Shape<Derived>& (or deducing Derived directly)."],
+ bullets:[
+  "Write a base class template that implements static polymorphism: it takes the derived type as a template parameter and calls an implementation method on the derived class through a static_cast of itself, with no virtual functions anywhere.",
+  "Derive a circle type and a square type from it, each providing its own area computation.",
+  "Write a free function that accepts any shape built this way and prints its area.",
+  "Implement the same thing with a classic virtual base class and compare the generated -O2 assembly (e.g. on godbolt.org) — not stdout-checkable, do this by inspection."
+ ],
+ validates:["CRTP","static vs dynamic polymorphism","vtable cost"],
+ driver:`int main(){\n  Circle c{2.0};\n  Square s{3.0};\n  std::cout << std::fixed << std::setprecision(2);\n  std::cout << c.area() << "\\n";\n  std::cout << s.area() << "\\n";\n}`,
+ expected:"12.57\n9.00"},
+
+{id:22, part:"cpp20", std:"C++11→20",
+ title:"constexpr vs consteval, three ways",
+ primer:"consteval marks a function as an 'immediate function' — it must be evaluated at compile time for every call with no runtime fallback, unlike an ordinary constexpr function which can run at compile time or at runtime.",
+ includes:["iostream"],
+ hints:["The C++11 recursive version needs a primary template plus a template<> struct Factorial<0> base-case specialization, since C++11 forbids constexpr loops.","The C++14 relaxed-constexpr version can use a plain for-loop inside a constexpr function, just like exercise 12.","A consteval function must be evaluated at compile time for every call with no runtime fallback — calling it with a runtime-only argument should fail to compile, unlike an ordinary constexpr function which would just fall back to running at runtime."],
+ bullets:[
+  "Implement a compile-time factorial three separate ways: as a C++11 recursive template with a base-case specialization, as a C++14-style relaxed-constexpr function with a loop, and as a C++20 consteval function.",
+  "Use static_assert to confirm all three are evaluated at compile time.",
+  "Try calling the consteval version with an argument that isn't known at compile time, and read the compiler's rejection (not stdout-checkable — read the error yourself)."
+ ],
+ validates:["constexpr vs consteval","legacy template metaprogramming"],
+ driver:`int main(){\n  static_assert(Factorial<5>::value == 120);\n  static_assert(factorial14(5) == 120);\n  constexpr int x = factorial20(5);\n  std::cout << Factorial<5>::value << " " << factorial14(5) << " " << x << "\\n";\n}`,
+ expected:"120 120 120"},
+
+{id:23, part:"cpp20", std:"capstone",
+ title:"Capstone: a tiny type-safe Variant",
+ primer:"A tagged union (variant) stores exactly one of several possible alternative types at a time, tracking which is active and handling construction/destruction manually since the alternatives share the same storage.",
+ includes:["iostream","string"],
+ hints:["Use aligned raw storage (e.g. alignas(...) std::byte buffer[max_size]) sized for the largest alternative, and placement-new the active object into it with new (buffer) T(...).","Track which alternative is active with an index or type-tag, and explicitly call the matching destructor (ptr->~T()) before switching to a different alternative.","get<T>() should assert the active type actually matches before reinterpreting the buffer as a T*, and visit() can use if constexpr across the type pack to find and invoke the callable on whichever type is active."],
+ bullets:[
+  "Build a minimal tagged-union type parameterized on a pack of alternative types, constructible from any value whose type is in that pack, with the allowed types enforced via a concept or requires clause.",
+  "Give it a way to retrieve the currently active value by its type, asserting the active type actually matches.",
+  "Give it a visit method that dispatches to a callable based on which alternative is active, using if constexpr over the pack.",
+  "Implement the underlying storage manually: a raw byte buffer sized for the largest alternative, using placement new to construct into it and explicit destructor calls to tear down."
+ ],
+ validates:["variadics","if constexpr","concepts","object lifetime"],
+ driver:`int main(){\n  MyVariant<int,double,std::string> v{42};\n  std::cout << v.get<int>() << "\\n";\n\n  v = MyVariant<int,double,std::string>{std::string("hi")};\n  std::cout << v.get<std::string>() << "\\n";\n\n  v.visit([](auto&& val){ std::cout << "visited: " << val << "\\n"; });\n}`,
+ expected:"42\nhi\nvisited: hi"},
+];
+
+const CONCEPTS = [
+{id:1, std:"core",
+ question:"Templates are often described as having zero runtime overhead. Does that mean writing more template code can never affect binary size or build time?",
+ answer:"No — the trade-off just moves elsewhere. The compiler doesn't generate any code for the template itself, but every distinct set of template arguments it's instantiated with produces its own separate compiled function or class ('template bloat'). More instantiations mean more code the linker has to keep, and re-parsing template definitions in every translation unit that includes them lengthens compile times, even though there's no per-call runtime dispatch overhead the way a virtual function has."},
+
+{id:2, std:"core",
+ question:"Why do template function and class definitions usually have to live entirely in header files, rather than split into a .h declaration and a .cpp definition the way ordinary functions are?",
+ answer:"A template isn't compiled into real code until it's instantiated with concrete types, and the compiler needs to see the full definition at the point of instantiation to generate that code. If the definition lived only in a separate .cpp file, other translation units that only include the header wouldn't have access to it when they try to instantiate the template, leading to linker errors. Explicit instantiation in one .cpp file — as in the extern template exercise — is the main workaround."},
+
+{id:3, std:"core",
+ question:"What is two-phase name lookup, and why does it matter for code inside a template that depends on a template parameter's type?",
+ answer:"The compiler processes a template body in two phases: once at definition time, resolving anything that doesn't depend on the template parameters, and again at instantiation time, resolving names that do depend on them. Because of this, a dependent name that refers to a type usually needs an explicit 'typename' keyword, and a dependent name that refers to a template needs the 'template' keyword, so the compiler knows how to parse the expression correctly before it even knows the concrete type involved."},
+
+{id:4, std:"core",
+ question:"What is SFINAE, spelled out, and what real problem does it solve?",
+ answer:"SFINAE stands for 'Substitution Failure Is Not An Error.' When the compiler substitutes a candidate template's parameters during overload resolution and that substitution produces an invalid type or expression, the compiler silently discards that candidate from the overload set instead of raising a hard error, as long as at least one candidate remains valid. It's the classic pre-concepts mechanism for writing templates that behave differently — or aren't considered at all — depending on which operations a type supports."},
+
+{id:5, std:"core",
+ question:"Can a member function template be declared virtual?",
+ answer:"No. Virtual dispatch requires the compiler to build a fixed-size vtable listing every virtual function at compile time, but a function template can be instantiated with an open-ended set of type arguments — there's no way to know the complete set of instantiations in advance, so the two features are fundamentally incompatible."},
+
+{id:6, std:"core",
+ question:"Are Foo&lt;int&gt; and Foo&lt;double&gt; the same type, the same class, or something else entirely?",
+ answer:"They're two distinct, unrelated types that happen to share the same template as their blueprint. Foo&lt;int&gt; and Foo&lt;double&gt; have no implicit conversion between them and no shared base-class relationship, and the compiler generates entirely separate code for each — they only look related because of the shared source text."},
+
+{id:7, std:"core",
+ question:"Does the compiler check the body of an uninstantiated template function for correctness before it's ever used?",
+ answer:"Only partially. Non-dependent code — anything not relying on the template parameters — is checked at the point the template is defined, the same as ordinary code. Dependent code, whose meaning depends on what the template parameters turn out to be, is only fully checked once the template is actually instantiated with concrete types, which is why some template bugs only surface the first time a particular instantiation is used."},
+
+{id:8, std:"core",
+ question:"What's the practical difference between explicit template specialization and simply overloading a function of the same name?",
+ answer:"Specialization gives a different implementation for the same interface at a specific argument, and for function templates is bound tightly to whichever primary template it 'belongs to' — the compiler picks the best-matching primary template first during overload resolution, and only then considers whether a specialization exists for it. An ordinary overload instead participates directly and independently in overload resolution alongside every other candidate. Mixing specialization with a separate non-template overload of the same name is a common source of surprising results in real code."},
+
+{id:9, std:"C++20",
+ question:"Do concepts change how a constrained template is compiled, or mainly how errors are reported?",
+ answer:"Mainly the latter. A concept-constrained template still gets instantiated and compiled the same way an unconstrained one would once a valid candidate is chosen; what concepts change is overload resolution and diagnostics — constraints are checked earlier and produce direct, readable failure messages ('type does not satisfy X') instead of the deep, often unreadable error traces you'd get from a SFINAE-based trick failing somewhere deep inside library internals."},
+
+{id:10, std:"core",
+ question:"If you never call a particular member function of an instantiated class template, does the compiler still instantiate and type-check that member function?",
+ answer:"No — unlike a function template, which is instantiated as a whole, an instantiated class template only implicitly instantiates the member functions that are actually used (called, or whose address is taken). Unused member functions are never generated or fully checked, which is why a class template can be instantiated with a type that wouldn't satisfy every member function, as long as the members that would fail are never called."},
+];
+
+const state = {};
+EXERCISES.forEach(e => state[e.id] = { done:false });
+CONCEPTS.forEach(c => state["c" + c.id] = { done:false });
+
+const mainEl = document.getElementById("main");
+
+function esc(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function render(){
+  mainEl.innerHTML = "";
+  let lastPart = null;
+  EXERCISES.forEach(ex => {
+    if(ex.part !== lastPart){
+      lastPart = ex.part;
+      const div = document.createElement("div");
+      div.className = "part-divider";
+      div.textContent = PARTS[ex.part].label;
+      mainEl.appendChild(div);
+    }
+    mainEl.appendChild(buildCard(ex));
+  });
+
+  const conceptDivider = document.createElement("div");
+  conceptDivider.className = "part-divider";
+  conceptDivider.textContent = "Knowledge Check — No Coding Required";
+  mainEl.appendChild(conceptDivider);
+  const intro = document.createElement("p");
+  intro.className = "section-intro";
+  intro.textContent = "Quick conceptual questions of the kind that come up in a quant-dev interview alongside the coding drills. Think it through, then reveal the answer to check yourself.";
+  mainEl.appendChild(intro);
+  CONCEPTS.forEach(c => mainEl.appendChild(buildConceptCard(c)));
+
+  updateStats();
+}
+
+function buildCard(ex){
+  const st = state[ex.id];
+  const details = document.createElement("details");
+  details.className = "card" + (st.done ? " done" : "");
+  details.dataset.id = ex.id;
+
+  const summary = document.createElement("summary");
+  summary.className = "card-head";
+  summary.innerHTML = `
+    <span class="chk">${st.done ? "✓" : ""}</span>
+    <span class="num">${String(ex.id).padStart(2,"0")}</span>
+    <span class="card-title"><span class="t">${esc(ex.title)}</span></span>
+    <span class="chips">
+      <span class="chip std">${esc(ex.std)}</span>
+    </span>
+    <span class="arrow">▸</span>
+  `;
+  summary.querySelector(".chk").addEventListener("click", (e) => {
+    e.preventDefault(); e.stopPropagation();
+    setDone(ex, !st.done);
+  });
+
+  const noteHtml = ex.note ? `<div class="note">${esc(ex.note)}</div>` : "";
+
+  const hintsHtml = (ex.hints && ex.hints.length) ? `
+    <button class="hints-toggle" type="button">show hint (1/${ex.hints.length})</button>
+    <ul class="hint-list">${ex.hints.map(h => `<li>${esc(h)}</li>`).join("")}</ul>
+  ` : "";
+
+  const body = document.createElement("div");
+  body.className = "card-body";
+  body.innerHTML = `
+    <div class="primer">${esc(ex.primer)}</div>
+    <ul>${ex.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul>
+    ${hintsHtml}
+    <div class="validates">${ex.validates.map(v => `<span class="vtag">validates: ${esc(v)}</span>`).join("")}</div>
+    <div class="driver-head">
+      <h4>test driver — append to your file</h4>
+      <button class="copy-btn" type="button" data-id="${ex.id}">copy</button>
+    </div>
+    <pre><code>${esc(fullDriver(ex))}</code></pre>
+    <h4>expected stdout</h4>
+    <pre class="expected"><code>${esc(ex.expected)}</code></pre>
+    ${noteHtml}
+  `;
+
+  details.appendChild(summary);
+  details.appendChild(body);
+  return details;
+}
+
+function buildConceptCard(c){
+  const key = "c" + c.id;
+  const st = state[key];
+  const details = document.createElement("details");
+  details.className = "card concept-card" + (st.done ? " done" : "");
+  details.dataset.ckey = key;
+
+  const summary = document.createElement("summary");
+  summary.className = "card-head";
+  summary.innerHTML = `
+    <span class="chk">${st.done ? "✓" : ""}</span>
+    <span class="num">Q${String(c.id).padStart(2,"0")}</span>
+    <span class="card-title"><span class="t">${esc(c.question)}</span></span>
+    <span class="chips">
+      <span class="chip std">${esc(c.std)}</span>
+    </span>
+    <span class="arrow">▸</span>
+  `;
+  summary.querySelector(".chk").addEventListener("click", (e) => {
+    e.preventDefault(); e.stopPropagation();
+    setConceptDone(key, !st.done);
+  });
+
+  const body = document.createElement("div");
+  body.className = "card-body";
+  body.innerHTML = `
+    <button class="reveal-toggle" type="button">reveal answer</button>
+    <div class="answer-box">${c.answer}</div>
+  `;
+  body.querySelector(".reveal-toggle").addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    const box = btn.nextElementSibling;
+    const showing = box.classList.toggle("shown");
+    btn.textContent = showing ? "hide answer" : "reveal answer";
+  });
+
+  details.appendChild(summary);
+  details.appendChild(body);
+  return details;
+}
+
+function setConceptDone(key, val){
+  const st = state[key];
+  st.done = val;
+  const card = mainEl.querySelector(`.card[data-ckey="${key}"]`);
+  if(card){
+    card.classList.toggle("done", st.done);
+    card.querySelector(".chk").innerHTML = st.done ? "✓" : "";
+  }
+  updateStats();
+}
+
+function fullDriver(ex){
+  const includesBlock = (ex.includes || []).map(i => `#include <${i}>`).join("\n");
+  return includesBlock ? `${includesBlock}\n\n${ex.driver}` : ex.driver;
+}
+
+function setDone(ex, val){
+  const st = state[ex.id];
+  st.done = val;
+  const card = mainEl.querySelector(`.card[data-id="${ex.id}"]`);
+  if(card){
+    card.classList.toggle("done", st.done);
+    card.querySelector(".chk").innerHTML = st.done ? "✓" : "";
+  }
+  updateStats();
+}
+
+function updateStats(){
+  const exDone = EXERCISES.filter(e => state[e.id].done).length;
+  const conceptDone = CONCEPTS.filter(c => state["c" + c.id].done).length;
+  document.querySelector("#stat-progress").textContent = exDone + conceptDone;
+  document.querySelector("#stat-total").textContent = EXERCISES.length + CONCEPTS.length;
+}
+
+document.addEventListener("click", (e) => {
+  const toggle = e.target.closest(".hints-toggle");
+  if(!toggle) return;
+  const list = toggle.nextElementSibling;
+  const items = list.querySelectorAll("li");
+  const revealedCount = list.querySelectorAll("li.revealed").length;
+  if(revealedCount < items.length){
+    items[revealedCount].classList.add("revealed");
+    const nowRevealed = revealedCount + 1;
+    toggle.textContent = nowRevealed < items.length
+      ? `show hint (${nowRevealed + 1}/${items.length})`
+      : "hide hints";
+  } else {
+    items.forEach(li => li.classList.remove("revealed"));
+    toggle.textContent = `show hint (1/${items.length})`;
+  }
+});
+
+function copyText(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise((resolve, reject) => {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try{
+      document.execCommand("copy") ? resolve() : reject(new Error("execCommand failed"));
+    }catch(err){
+      reject(err);
+    }finally{
+      document.body.removeChild(ta);
+    }
+  });
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".copy-btn");
+  if(!btn) return;
+  const ex = EXERCISES.find(x => String(x.id) === btn.dataset.id);
+  if(!ex) return;
+  copyText(fullDriver(ex)).then(() => {
+    btn.textContent = "copied!";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = "copy"; btn.classList.remove("copied"); }, 1500);
+  }).catch(() => {
+    btn.textContent = "failed";
+    setTimeout(() => { btn.textContent = "copy"; }, 1500);
+  });
+});
+
+render();
+</script>
+</body>
+</html>
