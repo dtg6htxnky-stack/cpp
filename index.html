@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>class&lt;InterviewPrep&gt;</title>
+<title>template&lt;InterviewPrep&gt;</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
@@ -102,11 +102,10 @@ main{ max-width:920px; margin:0 auto; padding:18px 24px 80px; }
 .reveal-toggle:focus-visible{ outline:2px solid var(--teal); outline-offset:2px; }
 .answer-box{ display:none; font-size:14.5px; color:var(--paper); background:var(--panel-2); border:1px solid var(--teal-dim); border-left:2px solid var(--teal); border-radius:0 6px 6px 0; padding:10px 12px; margin:10px 0 0; }
 .answer-box.shown{ display:block; }
-.concept-card .card-body{ padding-left:58px; }
-
+.solution-box{ padding:4px 4px 4px 12px; }
+.solution-box pre{ font-family:var(--font-mono); font-size:13px; color:#C9D6E3; background:transparent; border:none; margin:0; padding:8px 4px; overflow-x:auto; white-space:pre-wrap; word-break:break-word; }
 .solution-toggle{ margin-top:14px; }
-.card-body pre.solution-box{ display:none; border-color:var(--teal-dim); border-left:2px solid var(--teal); margin-top:10px; }
-.card-body pre.solution-box.shown{ display:block; }
+.concept-card .card-body{ padding-left:58px; }
 
 @media (max-width:600px){
   .card-body{ padding-left:16px; }
@@ -116,414 +115,1059 @@ main{ max-width:920px; margin:0 auto; padding:18px 24px 80px; }
 <body>
 
 <header>
-  <h1>class&lt;InterviewPrep&gt;</h1>
-  <div class="progress-text"><b id="stat-progress">0</b> / <span id="stat-total">22</span> checked off</div>
+  <h1>template&lt;InterviewPrep&gt;</h1>
+  <div class="progress-text"><b id="stat-progress">0</b> / <span id="stat-total">23</span> checked off</div>
 </header>
 
 <main id="main"></main>
 
 <script>
 const PARTS = {
-  foundations:  { label: "Object Lifecycle Foundations" },
-  semantics:    { label: "Ownership & Semantics" },
-  polymorphism: { label: "Polymorphism & Dispatch" },
-  idioms:       { label: "Advanced Idioms" },
-  quantperf:    { label: "Object Layout & Performance" },
+  foundations: { label: "Foundations" },
+  cpp11:       { label: "C++11" },
+  cpp14:       { label: "C++14" },
+  cpp17:       { label: "C++17" },
+  cpp20:       { label: "C++20" },
 };
 
 const EXERCISES = [
 {id:1, part:"foundations", std:"pre-11",
- title:"Member initialization order vs. mem-init-list order",
- primer:"Class members are initialized in the order they're declared in the class body — not the order listed in the constructor's mem-initializer-list — which can silently produce wrong values if a formula depends on that order.",
- includes:["iostream"],
- hints:["Members are always initialized in declaration order, top to bottom in the class body — the order you write them in the mem-init-list is completely ignored by the compiler for ordering purposes.","Compile with -Wreorder (part of -Wall) and the compiler will warn you if your mem-init-list order doesn't match declaration order — a strong signal something's off even before you reason about it.","If a later-declared member's initializer reads an earlier-declared member, that's safe. If an earlier-declared member's initializer reads a later-declared one, that member is still uninitialized garbage at that point."],
+ title:"Function template basics + deduction",
+ primer:"Function templates let a single function work across multiple types, deducing the template parameter(s) from the arguments at the call site instead of you specifying them explicitly.",
+ includes:["iostream","string"],
+ hints:["Template argument deduction works per-parameter — when two parameters share the same template type T, both arguments must deduce to the exact same type, which is why calling with an int and a double fails.","An explicit template argument like myMax<double>(3, 3.5) bypasses deduction for that call entirely.","For the auto-return version, remember 'auto' as a return type lets the compiler deduce it from the return statement — no trailing return syntax needed."],
  bullets:[
-  "Write an Account class with four members declared in this order: id, balance, rate, interest — where interest should be computed as balance * rate at construction time.",
-  "Write the constructor's mem-init-list in a different order than the members are declared, and confirm with -Wreorder that the compiler flags it — then explain in a comment why the *actual* initialization order was still correct despite the list being 'out of order'.",
-  "Now deliberately break it: declare interest *before* balance and rate in the class body, keep the same formula, and observe that it silently computes garbage instead of failing to compile. Fix it by reordering the declarations back."
+  "Write a two-argument function template that returns the larger of its two arguments.",
+  "Call it with ints, doubles, and std::strings.",
+  "Call it with one int and one double argument — it won't compile. Explain why, then fix it three separate ways: an explicit template argument, a version with two independent template parameters and a trailing return type, and a version using an auto return type."
  ],
- validates:["declaration-order initialization","mem-init-list is not execution order","-Wreorder"],
- driver:`int main(){\n  Account a(7, 1000.0, 0.05);\n  std::cout << a.getId() << " " << a.getBalance() << " " << a.getInterest() << "\\n";\n}`,
- expected:"7 1000 50",
- solution:`class Account {\npublic:\n    // Mem-init-list order below does NOT match declaration order\n    // (id, balance, rate, interest) -- -Wreorder will flag this -- but\n    // actual initialization still happens id, then balance, then rate,\n    // then interest, because that's fixed by declaration order.\n    Account(int id, double balance, double rate)\n        : rate(rate), balance(balance), id(id), interest(balance * rate) {}\n\n    int getId() const { return id; }\n    double getBalance() const { return balance; }\n    double getInterest() const { return interest; }\n\nprivate:\n    int id;\n    double balance;\n    double rate;\n    double interest;\n};\n\n// Broken variant (for comparison): declaring interest before balance/rate\n// in the class body would initialize interest first, while balance and\n// rate are still uninitialized garbage -- interest silently computes a\n// nonsense value instead of failing to compile.`},
+ validates:["argument deduction","implicit conversion limits"],
+ driver:`int main(){\n  std::cout << myMax(3, 7) << '\\n';\n  std::cout << myMax(3.5, 2.25) << '\\n';\n  std::cout << myMax(std::string("apple"), std::string("banana")) << '\\n';\n  std::cout << myMax<double>(3, 3.5) << '\\n';\n}`,
+ expected:"7\n3.5\nbanana\n3.5",
+ solution:`template<typename T>
+T myMax(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+// myMax(3, 3.5) fails to compile: both parameters share the same
+// template parameter T, so T must deduce to the SAME type from both
+// arguments. Deducing int from 3 and double from 3.5 is a conflict
+// -> "no matching function" / deduction failure.
+
+// Fix 1: explicit template argument bypasses deduction entirely
+myMax<double>(3, 3.5);
+
+// Fix 2: two independent template params + trailing return type
+template<typename A, typename B>
+auto myMax2(A a, B b) -> decltype(a > b ? a : b) {
+    return (a > b) ? a : b;
+}
+
+// Fix 3: two independent template params + auto return type (C++14)
+template<typename A, typename B>
+auto myMax3(A a, B b) {
+    return (a > b) ? a : b;
+}`},
 
 {id:2, part:"foundations", std:"pre-11",
- title:"Rule of Three: deep copies for a resource-owning class",
- primer:"Any class that manages a resource (like a heap allocation) through a raw pointer needs its own copy constructor and copy-assignment operator, because the compiler-generated defaults only copy the pointer's value, not what it points to.",
+ title:"Class template + member function templates",
+ primer:"Class templates parameterize an entire type on one or more parameters, including non-type parameters like a compile-time size; a member function can carry its own separate template parameter distinct from the class's.",
  includes:["iostream"],
- hints:["A raw owning pointer member means the compiler-generated copy constructor and copy-assignment (which just copy the pointer value) will produce two objects pointing at the same heap block — leading to a double-free when both destructors run.","Copy-assignment needs a self-assignment check (if (this == &other) return *this;) before you delete anything, or self-assignment destroys the data before copying it back.","Build the replacement buffer fully before touching the old one in operator=, so that if new[] throws, the object is left unchanged (the copy-and-swap idiom takes this further, but a simple 'allocate-then-delete' ordering already gets you basic exception safety)."],
+ hints:["A non-type template parameter like size_t N lets you store a plain array (T data[N]) as a member, no dynamic allocation needed.","The member template cast<U>() needs its own template<typename U> line above it, separate from the class's own template<typename T, size_t N>.","Provide both a non-const and a const overload of operator[] — the compiler picks based on the constness of the object being indexed."],
  bullets:[
-  "Write a Buffer class that owns a dynamically-allocated int[] array plus its size, with a constructor taking the size.",
-  "Implement a copy constructor and copy-assignment operator that each perform a true deep copy — not a pointer copy.",
-  "Add set(i, v) / get(i) accessors and a destructor that frees the array.",
-  "Verify with AddressSanitizer (-fsanitize=address) that there are no leaks or double-frees across copy-construction, copy-assignment, and self-assignment."
+  "Build a stack-allocated fixed-size vector, parameterized on element type and a compile-time size, that supports brace-initialization of its elements.",
+  "Give it a member template that returns a copy of itself with every element converted to a different type via static_cast.",
+  "Give it element access with both const and non-const overloads."
  ],
- validates:["Rule of Three","deep vs shallow copy","self-assignment safety"],
- driver:`int main(){\n  Buffer a(3);\n  a.set(0,1); a.set(1,2); a.set(2,3);\n  Buffer b(a);\n  b.set(0,99);\n  std::cout << a.get(0) << " " << b.get(0) << "\\n";\n  Buffer c(1);\n  c = a;\n  c.set(1,42);\n  std::cout << c.get(0) << " " << c.get(1) << " " << a.get(1) << "\\n";\n  c = c;\n  std::cout << c.get(1) << "\\n";\n}`,
- expected:"1 99\n1 42 2\n42",
- solution:`class Buffer {\npublic:\n    explicit Buffer(size_t size) : size_(size), data_(new int[size_]{}) {}\n\n    Buffer(const Buffer& other) : size_(other.size_), data_(new int[size_]) {\n        for (size_t i = 0; i < size_; ++i) data_[i] = other.data_[i];\n    }\n\n    Buffer& operator=(const Buffer& other) {\n        if (this == &other) return *this;\n        int* newData = new int[other.size_];\n        for (size_t i = 0; i < other.size_; ++i) newData[i] = other.data_[i];\n        delete[] data_;\n        data_ = newData;\n        size_ = other.size_;\n        return *this;\n    }\n\n    ~Buffer() { delete[] data_; }\n\n    void set(size_t i, int v) { data_[i] = v; }\n    int get(size_t i) const { return data_[i]; }\n\nprivate:\n    size_t size_;\n    int* data_;\n};`},
+ validates:["non-type params","member templates","const-correctness"],
+ driver:`int main(){\n  FixedVector<int,3> v{1,2,3};\n  v[1] = 20;\n  std::cout << v[0] << " " << v[1] << " " << v[2] << "\\n";\n  auto d = v.cast<double>();\n  std::cout << d[0] << " " << d[1] << " " << d[2] << "\\n";\n}`,
+ expected:"1 20 3\n1 20 3",
+ solution:`template<typename T, size_t N>
+struct FixedVector {
+    T data[N];
 
-{id:3, part:"foundations", std:"C++11",
- title:"Rule of Five: adding move construction and move assignment",
- primer:"C++11 added move construction and move assignment alongside the classic copy operations, letting a resource be transferred out of a temporary or an expiring object instead of always being deep-copied.",
+    FixedVector() = default;
+    FixedVector(std::initializer_list<T> init) {
+        size_t i = 0;
+        for (auto v : init) data[i++] = v;
+    }
+
+    T& operator[](size_t i) { return data[i]; }
+    const T& operator[](size_t i) const { return data[i]; }
+
+    // member template, distinct from the class's own <T, N>
+    template<typename U>
+    FixedVector<U, N> cast() const {
+        FixedVector<U, N> result;
+        for (size_t i = 0; i < N; ++i) result[i] = static_cast<U>(data[i]);
+        return result;
+    }
+};`},
+
+{id:3, part:"foundations", std:"pre-11",
+ title:"Explicit / partial specialization",
+ primer:"Template specialization lets you swap in a different implementation for specific arguments (full specialization) or a pattern of arguments (partial specialization) — but partial specialization only exists for class templates, not function templates.",
+ includes:["iostream","string","vector"],
+ hints:["Full specialization syntax is template<> struct TypeName<int> { ... }; — there's no template parameter list left to fill in.","Partial specialization keeps a parameter open, e.g. template<typename T> struct TypeName<T*> { ... }; matches any pointer type.","Function templates can be overloaded but not partially specialized — that's exactly why the pointer trick works for a class template but won't compile as a function partial specialization."],
+ bullets:[
+  "Write a class template that returns a human-readable name for a type, with full specializations for int, double, bool, and std::string (using the base names \"int\", \"double\", \"bool\", \"string\").",
+  "Add a partial specialization for pointer types that appends \" pointer\" to the pointee's name.",
+  "Add a partial specialization for std::vector<T> that returns \"vector of \" followed by T's name.",
+  "Try writing the pointer case as a partial specialization of a function template instead of a class template — read why the compiler rejects it."
+ ],
+ validates:["full vs partial spec","class-template-only rule"],
+ driver:`int main(){\n  std::cout << TypeName<int>::get() << "\\n";\n  std::cout << TypeName<double>::get() << "\\n";\n  std::cout << TypeName<bool>::get() << "\\n";\n  std::cout << TypeName<std::string>::get() << "\\n";\n  std::cout << TypeName<int*>::get() << "\\n";\n  std::cout << TypeName<std::vector<int>>::get() << "\\n";\n}`,
+ expected:"int\ndouble\nbool\nstring\nint pointer\nvector of int",
+ solution:`template<typename T>
+struct TypeName {
+    static std::string get() { return "unknown"; }
+};
+
+// full specializations
+template<> struct TypeName<int>         { static std::string get() { return "int"; } };
+template<> struct TypeName<double>      { static std::string get() { return "double"; } };
+template<> struct TypeName<bool>        { static std::string get() { return "bool"; } };
+template<> struct TypeName<std::string> { static std::string get() { return "string"; } };
+
+// partial specialization: pointer types
+template<typename T>
+struct TypeName<T*> {
+    static std::string get() { return TypeName<T>::get() + " pointer"; }
+};
+
+// partial specialization: std::vector<T>
+template<typename T>
+struct TypeName<std::vector<T>> {
+    static std::string get() { return "vector of " + TypeName<T>::get(); }
+};
+
+// Attempting the pointer case as a FUNCTION template partial
+// specialization does not compile:
+//
+//   template<typename T>
+//   std::string typeName<T*>();   // ERROR
+//
+// Function templates can be overloaded, but the language only allows
+// partial specialization for CLASS templates. A plain overload
+// \`template<typename T> std::string typeName(T*)\` would work instead,
+// because that's overloading, not specialization.`},
+
+{id:4, part:"cpp11", std:"C++11",
+ title:"Variadic templates + parameter packs",
+ primer:"A parameter pack lets a template accept any number of arguments of any types, processed through recursive instantiation or fold expressions rather than a fixed argument list.",
  includes:["iostream"],
- hints:["A move constructor should steal the source's pointer and null it out — the moved-from object must be left in a valid, destructible state (typically 'empty').","Mark move operations noexcept whenever you can actually guarantee they won't throw — containers like std::vector check this trait to decide whether to move or copy elements during reallocation.","Once you steal in the move constructor's init-list (data(o.data)), the very next thing you do in the body is null out o's pointer — otherwise both objects' destructors will try to free the same memory."],
+ hints:["sizeof...(Args) gives you the pack size directly — no recursion needed for count().","Build the tuple with one 'leaf' value per element, either through recursive inheritance from single-element base classes or recursive composition (a head plus a smaller Tuple of the rest).","get<N>() typically recurses: get<N> on a Tuple<Head, Rest...> defers to get<N-1> on the Rest... part until N reaches 0."],
  bullets:[
-  "Extend a Buffer-like Matrix class (int* data, size_t n) to full Rule of Five: copy ctor, copy assignment, move ctor, move assignment, and destructor.",
-  "The move constructor and move assignment should leave the moved-from object with a null data pointer and size zero.",
-  "Add an empty() query, and confirm that using an object after it's been moved-from is safe (it's just empty), even though its *value* is unspecified.",
-  "Explain why, if this class only declared a destructor (as in the previous exercise), the compiler would not implicitly generate move operations at all — falling back to copies instead."
+  "Write a constexpr function template that returns the number of types in a parameter pack.",
+  "Build a minimal tuple type from scratch, supporting construction from a list of values.",
+  "Add a free function that retrieves the Nth element by index, implemented via recursive template instantiation."
  ],
- validates:["Rule of Five","move constructor","move assignment","moved-from state"],
- driver:`int main(){\n  Matrix a(3);\n  a.set(0,10); a.set(1,20); a.set(2,30);\n  Matrix b(std::move(a));\n  std::cout << b.get(0) << " " << b.get(1) << " " << b.get(2) << "\\n";\n  std::cout << std::boolalpha << a.empty() << " " << a.size() << "\\n";\n  Matrix c(1);\n  c = std::move(b);\n  std::cout << c.get(2) << " " << std::boolalpha << b.empty() << "\\n";\n}`,
- expected:"10 20 30\ntrue 0\n30 true",
- solution:`class Matrix {\npublic:\n    explicit Matrix(size_t n) : n_(n), data_(new int[n_]{}) {}\n\n    Matrix(const Matrix& other) : n_(other.n_), data_(new int[n_]) {\n        for (size_t i = 0; i < n_; ++i) data_[i] = other.data_[i];\n    }\n    Matrix& operator=(const Matrix& other) {\n        if (this == &other) return *this;\n        int* newData = new int[other.n_];\n        for (size_t i = 0; i < other.n_; ++i) newData[i] = other.data_[i];\n        delete[] data_;\n        data_ = newData;\n        n_ = other.n_;\n        return *this;\n    }\n\n    Matrix(Matrix&& other) noexcept : n_(other.n_), data_(other.data_) {\n        other.data_ = nullptr;\n        other.n_ = 0;\n    }\n    Matrix& operator=(Matrix&& other) noexcept {\n        if (this == &other) return *this;\n        delete[] data_;\n        data_ = other.data_;\n        n_ = other.n_;\n        other.data_ = nullptr;\n        other.n_ = 0;\n        return *this;\n    }\n\n    ~Matrix() { delete[] data_; }\n\n    void set(size_t i, int v) { data_[i] = v; }\n    int get(size_t i) const { return data_[i]; }\n    bool empty() const { return n_ == 0; }\n    size_t size() const { return n_; }\n\nprivate:\n    size_t n_;\n    int* data_;\n};\n\n// If Matrix only declared a destructor (Rule of Three), the compiler would\n// NOT implicitly generate move operations at all -- declaring a destructor\n// suppresses them -- so the class would silently fall back to copies\n// wherever a move was requested.`},
+ validates:["parameter packs","recursive instantiation","sizeof..."],
+ driver:`int main(){\n  std::cout << count<int,double,char>() << "\\n";\n  Tuple<int,double,std::string> t{1, 2.5, std::string("hi")};\n  std::cout << get<0>(t) << " " << get<1>(t) << " " << get<2>(t) << "\\n";\n}`,
+ expected:"3\n1 2.5 hi",
+ solution:`template<typename... Args>
+constexpr size_t count() {
+    return sizeof...(Args);
+}
 
-{id:4, part:"foundations", std:"pre-11",
- title:"const correctness, mutable, and const/non-const overload pairs",
- primer:"const member functions promise not to change an object's observable state; mutable lets a specific member (like an internal cache) be changed anyway, and a member function can be overloaded purely on the constness of the object it's called through.",
- includes:["iostream","vector","numeric"],
- hints:["mutable lets a member be modified even from inside a const member function — the textbook use case is a cache that doesn't change the object's logical (observable) state.","You can overload a member function purely on constness: operator[] can have a const version returning by value and a non-const version returning a reference, and the compiler picks based on the constness of the object it's called on.","Any code path that lets you mutate through operator[] must invalidate the cache — otherwise a caller can silently get a stale cached sum after mutating an element."],
+// minimal tuple via recursive inheritance
+template<typename... Ts>
+struct Tuple {};
+
+template<typename Head, typename... Tail>
+struct Tuple<Head, Tail...> : Tuple<Tail...> {
+    Tuple(Head h, Tail... t) : Tuple<Tail...>(t...), head(h) {}
+    Head head;
+};
+
+// get<N>: recurse through the base classes until N reaches 0
+template<size_t N, typename... Ts>
+struct GetHelper;
+
+template<typename Head, typename... Tail>
+struct GetHelper<0, Head, Tail...> {
+    static Head& get(Tuple<Head, Tail...>& t) { return t.head; }
+};
+
+template<size_t N, typename Head, typename... Tail>
+struct GetHelper<N, Head, Tail...> {
+    static auto& get(Tuple<Head, Tail...>& t) {
+        Tuple<Tail...>& base = t; // slice to the base sub-tuple
+        return GetHelper<N - 1, Tail...>::get(base);
+    }
+};
+
+template<size_t N, typename... Ts>
+auto& get(Tuple<Ts...>& t) {
+    return GetHelper<N, Ts...>::get(t);
+}`},
+
+{id:5, part:"cpp11", std:"C++11",
+ title:"Alias templates (using)",
+ primer:"using-based alias templates give a template a shorter, parameterized name (e.g. Ptr<T> in place of unique_ptr<T>), doing at compile time what pre-C++11 required a helper struct and typedef for.",
+ includes:["iostream","memory"],
+ hints:["The alias template is one line: template<typename T> using Ptr = std::unique_ptr<T>;","The pre-C++11 workaround wraps a typedef inside a struct, and every use site needs typename PtrT<T>::type instead of just Ptr<T>."],
  bullets:[
-  "Write a Series class wrapping a std::vector<double>, with a sum() const method that lazily computes and caches the total using a mutable cache flag and cached value.",
-  "Add operator[] as a pair of overloads: a non-const version returning double& (which also invalidates the cache, since the caller might mutate through it), and a const version returning double by value.",
-  "Confirm that calling sum() twice in a row only does the O(n) computation once, and that mutating through the non-const operator[] correctly forces recomputation on the next sum() call.",
-  "Write a free function taking const Series&, and confirm it can only reach the const operator[] overload."
+  "Write an alias template that gives a shorter name to std::unique_ptr<T>.",
+  "Write the pre-C++11 workaround: a struct wrapper with a nested typedef, and confirm every use site needs a typename ... ::type prefix that the alias template doesn't."
  ],
- validates:["const member functions","mutable","const/non-const overload resolution"],
- driver:`void printFirst(const Series& s) {\n  std::cout << s[0] << "\\n";\n}\nint main(){\n  Series s{1.0, 2.0, 3.0};\n  std::cout << s.sum() << "\\n";\n  std::cout << s.sum() << "\\n";\n  s[0] = 100.0;\n  std::cout << s.sum() << "\\n";\n  printFirst(s);\n}`,
- expected:"6\n6\n105\n100",
- solution:`class Series {\npublic:\n    Series(std::initializer_list<double> vals) : data_(vals) {}\n\n    double sum() const {\n        if (!cacheValid_) {\n            cachedSum_ = std::accumulate(data_.begin(), data_.end(), 0.0);\n            cacheValid_ = true;\n        }\n        return cachedSum_;\n    }\n\n    // Non-const: caller might mutate through the returned reference, so\n    // invalidate the cache.\n    double& operator[](size_t i) {\n        cacheValid_ = false;\n        return data_[i];\n    }\n    // Const: read-only, cache stays valid.\n    double operator[](size_t i) const {\n        return data_[i];\n    }\n\nprivate:\n    std::vector<double> data_;\n    mutable bool cacheValid_ = false;\n    mutable double cachedSum_ = 0.0;\n};`},
+ validates:["alias templates","typedef limitation"],
+ driver:`int main(){\n  Ptr<int> p = std::make_unique<int>(42);\n  std::cout << *p << "\\n";\n}`,
+ expected:"42",
+ solution:`// alias template: one line, no wrapper struct needed
+template<typename T>
+using Ptr = std::unique_ptr<T>;
 
-{id:5, part:"semantics", std:"C++11",
- title:"Delegating constructors + explicit to control conversions",
- primer:"A constructor can delegate to another constructor of the same class from its initializer list instead of duplicating logic, and marking a converting constructor explicit blocks it from being invoked through an implicit conversion.",
+// pre-C++11 workaround: struct wrapper + nested typedef
+template<typename T>
+struct PtrT {
+    typedef std::unique_ptr<T> type;
+};
+
+// usage sites differ:
+//   Ptr<int> p = std::make_unique<int>(42);                 // alias template
+//   typename PtrT<int>::type p2 = std::make_unique<int>(42); // pre-C++11
+//
+// The pre-C++11 version needs \`typename ... ::type\` at every use site
+// because PtrT<int>::type is a dependent name; the alias template Ptr<T>
+// is usable directly as a type, exactly like a built-in type.`},
+
+{id:6, part:"cpp11", std:"C++11",
+ title:"Perfect forwarding + universal references",
+ primer:"A forwarding reference (T&& where T is itself deduced) can bind to both lvalues and rvalues, and std::forward preserves whichever value category was originally passed in as arguments travel through a layer of code.",
  includes:["iostream"],
- hints:["A delegating constructor calls a sibling constructor in its own mem-init-list — Price(double d) : Price(convertedTicks) {} — and cannot initialize any other members alongside that delegation.","Marking the double-taking constructor explicit stops a bare double from silently converting into a Price wherever a Price is expected — the caller has to write Price(x) or static_cast<Price>(x).","Storing the fundamental unit as integer ticks rather than a floating-point dollar amount avoids floating-point rounding drift accumulating across many arithmetic operations — a real concern once you start summing many prices."],
+ hints:["The factory's parameter should be T&& where T is itself a deduced template parameter — that's what makes it a forwarding reference rather than a plain rvalue reference.","Inside the factory, pass the arguments along with std::forward<Args>(args)..., or the value-category information gets lost.","In an already-instantiated class template, T&& is a fixed, non-deduced type at that point — so it's an ordinary rvalue reference, not a forwarding reference."],
  bullets:[
-  "Write a Price class storing an integer number of ticks internally (1 tick = $0.0001), with a private constructor taking ticks directly.",
-  "Add a public default constructor delegating to the ticks constructor with zero, and a public explicit constructor taking a double dollar amount that delegates to the ticks constructor after converting.",
-  "Add a static factory fromTicks(long long) for callers who already have a tick count, and dollars() / ticks() accessors.",
-  "Write a function taking const Price&, and confirm (by trying it and reading the compiler error) that passing a raw double literal directly fails to compile because the converting constructor is explicit — then fix the call site by constructing a Price explicitly."
+  "Implement a minimal make_unique-style factory that forwards its arguments to a constructor.",
+  "Define a type with three constructor overloads — for a non-const lvalue reference, a const lvalue reference, and an rvalue reference — each printing which one ran.",
+  "Call your factory with an lvalue, a const lvalue, and a literal, and confirm each one reaches the matching overload.",
+  "Explain why the forwarding parameter in your factory is a forwarding reference, while the same T&& syntax in a member function of an already-instantiated class template would not be."
  ],
- validates:["delegating constructors","explicit","implicit conversion suppression"],
- driver:`void quote(const Price& p) { std::cout << p.dollars() << "\\n"; }\nint main(){\n  Price p1;\n  Price p2(3.5);\n  Price p3 = Price::fromTicks(125000);\n  std::cout << p1.ticks() << " " << p2.ticks() << " " << p3.ticks() << "\\n";\n  quote(p2);\n  quote(Price(2.25));\n}`,
- expected:"0 35000 125000\n3.5\n2.25",
- solution:`class Price {\npublic:\n    Price() : Price(0LL) {}\n\n    // explicit: blocks a bare double from implicitly converting to Price.\n    explicit Price(double dollars) : Price(static_cast<long long>(dollars * 10000 + (dollars >= 0 ? 0.5 : -0.5))) {}\n\n    static Price fromTicks(long long ticks) { return Price(ticks); }\n\n    double dollars() const { return ticks_ / 10000.0; }\n    long long ticks() const { return ticks_; }\n\nprivate:\n    explicit Price(long long ticks) : ticks_(ticks) {}\n    long long ticks_;\n};\n\n// void quote(const Price&) called with a raw double literal, e.g. quote(2.25),\n// fails to compile: "no known conversion" -- because the double-taking\n// constructor is explicit. The call site must be fixed to quote(Price(2.25)).`},
+ validates:["forwarding refs","std::forward","reference collapsing"],
+ driver:`struct Widget {\n  Widget(int&) { std::cout << "ctor: lvalue\\n"; }\n  Widget(int const&) { std::cout << "ctor: const-lvalue\\n"; }\n  Widget(int&&) { std::cout << "ctor: rvalue\\n"; }\n};\n\nint main(){\n  int x = 5;\n  const int cx = 10;\n  auto a = myMakeUnique<Widget>(x);\n  auto b = myMakeUnique<Widget>(cx);\n  auto c = myMakeUnique<Widget>(20);\n}`,
+ expected:"ctor: lvalue\nctor: const-lvalue\nctor: rvalue",
+ solution:`#include <memory>
+#include <utility>
 
-{id:6, part:"semantics", std:"C++11",
- title:"Defaulted / deleted functions: a move-only handle type",
- primer:"= delete removes a specific special member function entirely (e.g. making a type non-copyable), while = default asks the compiler to generate its normal implementation — together they let you precisely shape which operations a type supports.",
- includes:["iostream","vector"],
- hints:["= delete on the copy constructor and copy-assignment operator makes the type non-copyable while leaving move operations available to declare separately — the deletion doesn't cascade to moves.","Because you've declared copy operations (even as deleted), the compiler will not implicitly generate move operations for you — you have to write both move constructor and move assignment yourself.","A move-only type still works fine inside std::vector, as long as you insert via std::move(temp) or in-place construction — the vector will move elements on reallocation rather than copy them."],
- bullets:[
-  "Write a ScopedHandle class wrapping a resource id (a plain int standing in for a file descriptor or socket).",
-  "Delete the copy constructor and copy-assignment operator explicitly, and implement move constructor and move assignment that transfer ownership and leave the source's id set to -1 (invalid).",
-  "The destructor should print a 'closing' message only if the handle is still valid (id >= 0).",
-  "Store several ScopedHandles in a std::vector<ScopedHandle>, inserting with std::move, and confirm the resource is only closed once per real resource — never on a moved-from husk."
- ],
- validates:["deleted special members","move-only types","non-copyable, movable"],
- driver:`int main(){\n  ScopedHandle a(5);\n  ScopedHandle b(std::move(a));\n  std::cout << a.get() << " " << b.get() << "\\n";\n  std::vector<ScopedHandle> handles;\n  handles.push_back(ScopedHandle(10));\n  handles.push_back(std::move(b));\n  std::cout << handles[0].get() << " " << handles[1].get() << "\\n";\n}`,
- expected:"-1 5\n10 5\nclosing 10\nclosing 5",
- solution:`class ScopedHandle {\npublic:\n    explicit ScopedHandle(int id) : id_(id) {}\n\n    ScopedHandle(const ScopedHandle&) = delete;\n    ScopedHandle& operator=(const ScopedHandle&) = delete;\n\n    ScopedHandle(ScopedHandle&& other) noexcept : id_(other.id_) {\n        other.id_ = -1;\n    }\n    ScopedHandle& operator=(ScopedHandle&& other) noexcept {\n        if (this != &other) {\n            if (id_ >= 0) std::cout << "closing " << id_ << "\\n";\n            id_ = other.id_;\n            other.id_ = -1;\n        }\n        return *this;\n    }\n\n    ~ScopedHandle() {\n        if (id_ >= 0) std::cout << "closing " << id_ << "\\n";\n    }\n\n    int get() const { return id_; }\n\nprivate:\n    int id_;\n};`},
+// Args&&... are forwarding references because Args is deduced per-call.
+template<typename T, typename... Args>
+std::unique_ptr<T> myMakeUnique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
-{id:7, part:"semantics", std:"pre-11",
- title:"RAII + exception safety via stack unwinding",
- primer:"RAII ties a resource's lifetime to an object's scope: acquisition happens in the constructor and release happens in the destructor, which is guaranteed to run even while an exception is unwinding the stack.",
- includes:["iostream","string","stdexcept"],
- hints:["The destructor is the only piece of cleanup code that's guaranteed to run during stack unwinding, even when an exception is thrown partway through a function — that's the entire premise of RAII.","Track whether the operation succeeded with a simple boolean flag set by an explicit commit() call — the destructor checks that flag and rolls back only if commit() was never reached.","Because the object is destroyed as the stack unwinds past its scope, the rollback message prints *before* the exception is actually caught further up the call stack — the ordering is a good way to confirm you understand unwinding."],
- bullets:[
-  "Write a Transaction class that prints a 'begin' message in its constructor and a 'commit' message when an explicit commit() method is called.",
-  "In its destructor, print a 'rollback' message only if commit() was never called before destruction.",
-  "Write a placeOrder(bool shouldFail) function that constructs a Transaction, optionally throws a std::runtime_error partway through, and otherwise calls commit().",
-  "Call placeOrder with both a normal path and a throwing path from within try/catch blocks, and confirm the rollback message appears (from stack unwinding) before your catch block's own message."
- ],
- validates:["RAII","stack unwinding","exception safety"],
- driver:`void placeOrder(bool shouldFail) {\n  Transaction t("order-42");\n  if (shouldFail) throw std::runtime_error("risk check failed");\n  t.commit();\n}\nint main(){\n  try {\n    placeOrder(false);\n  } catch (const std::exception& e) {\n    std::cout << "caught: " << e.what() << "\\n";\n  }\n  try {\n    placeOrder(true);\n  } catch (const std::exception& e) {\n    std::cout << "caught: " << e.what() << "\\n";\n  }\n}`,
- expected:"begin order-42\ncommit order-42\nbegin order-42\nrollback order-42\ncaught: risk check failed",
- solution:`class Transaction {\npublic:\n    explicit Transaction(std::string name) : name_(std::move(name)) {\n        std::cout << "begin " << name_ << "\\n";\n    }\n\n    void commit() {\n        committed_ = true;\n        std::cout << "commit " << name_ << "\\n";\n    }\n\n    ~Transaction() {\n        if (!committed_) std::cout << "rollback " << name_ << "\\n";\n    }\n\nprivate:\n    std::string name_;\n    bool committed_ = false;\n};`},
+struct Widget {
+    Widget(int&)       { std::cout << "ctor: lvalue\\n"; }
+    Widget(int const&) { std::cout << "ctor: const-lvalue\\n"; }
+    Widget(int&&)      { std::cout << "ctor: rvalue\\n"; }
+};
 
-{id:8, part:"semantics", std:"C++11",
- title:"Instrumenting copies vs. moves under vector reallocation",
- primer:"std::vector relocates its existing elements when it grows past capacity, choosing to move rather than copy them only when the element type's move constructor is marked noexcept.",
- includes:["iostream","vector"],
- hints:["Give your type static copy/move counters incremented in the copy constructor and move constructor respectively, then read them after each block — this turns an invisible performance concern into a printable number.","std::vector only moves elements during reallocation instead of copying them if the move constructor is noexcept — an unmarked or throwing move constructor silently falls back to copies for exception-safety reasons.","reserve()-ing enough capacity upfront means each push_back only has to move-construct the single new element — no existing elements need to be relocated, since there's no reallocation."],
- bullets:[
-  "Write an Instrumented class with an int value, static copy and move counters, and a copy constructor / noexcept move constructor that each increment their respective counter.",
-  "Push three Instrumented temporaries into a std::vector that has reserve(3) called upfront, and record the copy/move counts.",
-  "Reset the counters, then push the same three temporaries into a fresh vector with no reserve() call, and record the counts again.",
-  "Explain the difference: with no reserve, each capacity-doubling reallocation has to relocate every already-inserted element in addition to constructing the new one, and confirm your counts match 1, then 2, then 3 relocations across the three pushes."
- ],
- validates:["move vs copy","noexcept move + vector reallocation","instrumentation counters"],
- driver:`int main(){\n  {\n    std::vector<Instrumented> v;\n    v.reserve(3);\n    v.push_back(Instrumented(1));\n    v.push_back(Instrumented(2));\n    v.push_back(Instrumented(3));\n    std::cout << "reserved: copies=" << Instrumented::copies << " moves=" << Instrumented::moves << "\\n";\n  }\n  Instrumented::copies = 0; Instrumented::moves = 0;\n  {\n    std::vector<Instrumented> v;\n    v.push_back(Instrumented(1));\n    v.push_back(Instrumented(2));\n    v.push_back(Instrumented(3));\n    std::cout << "unreserved: copies=" << Instrumented::copies << " moves=" << Instrumented::moves << "\\n";\n  }\n}`,
- expected:"reserved: copies=0 moves=3\nunreserved: copies=0 moves=6",
- solution:`class Instrumented {\npublic:\n    explicit Instrumented(int value) : value_(value) {}\n\n    Instrumented(const Instrumented& other) : value_(other.value_) { ++copies; }\n    Instrumented(Instrumented&& other) noexcept : value_(other.value_) { ++moves; }\n\n    Instrumented& operator=(const Instrumented&) = default;\n    Instrumented& operator=(Instrumented&&) noexcept = default;\n\n    int value() const { return value_; }\n\n    static int copies;\n    static int moves;\n\nprivate:\n    int value_;\n};\n\nint Instrumented::copies = 0;\nint Instrumented::moves = 0;`},
+// Why myMakeUnique's Args&& is a forwarding reference:
+// Args is deduced fresh, independently, for THIS call, from an
+// expression of the form Args&&. That's the exact pattern the language
+// recognizes as a forwarding reference (reference collapsing lets it
+// bind to lvalues as Args& and to rvalues as Args&&).
+//
+// Inside an already-instantiated class template, e.g.
+//   template<typename T> struct Holder { void f(T&& x); };
+// T is fixed once Holder<SomeType> is instantiated -- it is not being
+// deduced at the call to f(). So T&& there is an ordinary rvalue
+// reference, not a forwarding reference, even though the syntax looks
+// identical.`},
 
-{id:9, part:"semantics", std:"C++11",
- title:"Static members: instance counting + a Meyers singleton",
- primer:"A static data member is shared across every instance of a class; a function-local static variable is lazily initialized exactly once, on first use, with that initialization guaranteed thread-safe since C++11 — the basis of the Meyers singleton.",
- includes:["iostream","string","map"],
- hints:["A static data member is shared across every instance of the class — it needs exactly one definition outside the class (or use inline for a C++17-and-later in-class definition).","A Meyers singleton — a static local variable inside a function — is guaranteed by the C++11 standard to be both lazily initialized on first use and thread-safe to initialize, with no manual locking needed.","Deleting the copy constructor and copy-assignment operator on the singleton class prevents anyone from accidentally creating a second instance by copying the one returned by instance()."],
- bullets:[
-  "Write a ConfigManager class with a private constructor (that prints a message so you can see when it runs), a deleted copy constructor and copy-assignment, and a static instance() method returning a ConfigManager& via a function-local static.",
-  "Add set(key, value) / get(key) methods backed by a std::map<string,string> member.",
-  "Call ConfigManager::instance() several times and confirm the constructor message only prints once, no matter how many times instance() is called.",
-  "Separately, write a Widget class with a static int liveCount incremented in the constructor and decremented in the destructor, and confirm the count rises and falls correctly as Widgets enter and leave scope."
- ],
- validates:["static data members","Meyers singleton","lazy + thread-safe static init"],
- driver:`int main(){\n  ConfigManager::instance().set("mode", "prod");\n  std::cout << ConfigManager::instance().get("mode") << "\\n";\n  ConfigManager::instance();\n  std::cout << Widget::count() << "\\n";\n  {\n    Widget a, b;\n    std::cout << Widget::count() << "\\n";\n    Widget c;\n    std::cout << Widget::count() << "\\n";\n  }\n  std::cout << Widget::count() << "\\n";\n}`,
- expected:"ConfigManager constructed\nprod\n0\n2\n3\n0",
- solution:`class ConfigManager {\npublic:\n    static ConfigManager& instance() {\n        static ConfigManager inst; // constructed once, on first call\n        return inst;\n    }\n\n    void set(const std::string& key, const std::string& value) { data_[key] = value; }\n    std::string get(const std::string& key) const {\n        auto it = data_.find(key);\n        return it != data_.end() ? it->second : std::string();\n    }\n\n    ConfigManager(const ConfigManager&) = delete;\n    ConfigManager& operator=(const ConfigManager&) = delete;\n\nprivate:\n    ConfigManager() { std::cout << "ConfigManager constructed\\n"; }\n    std::map<std::string, std::string> data_;\n};\n\nclass Widget {\npublic:\n    Widget() { ++count_; }\n    ~Widget() { --count_; }\n    static int count() { return count_; }\n\nprivate:\n    static int count_;\n};\n\nint Widget::count_ = 0;`},
-
-{id:10, part:"polymorphism", std:"pre-11",
- title:"Virtual dispatch vs. object slicing",
- primer:"Virtual functions resolve to the most-derived override when called through a pointer or reference, but copying a derived object by value into a base-typed variable 'slices' off the derived part, leaving a plain base object behind.",
- includes:["iostream","string","memory"],
- hints:["Slicing happens whenever a derived object is copied *by value* into a variable of the base type — the derived-only data and the vtable pointer setup for the derived type are both lost; the object becomes a genuine, plain Instrument.","A reference or pointer to the base type does not slice anything — it's still looking at the original derived object, so virtual calls through it still dispatch to the derived override.","Rule of thumb for spotting risk: any function parameter or variable typed as Base (by value) that receives a Derived argument is a slicing site. Base& or Base* is safe from slicing."],
- bullets:[
-  "Write an Instrument base class with a virtual describe() returning a string, and a virtual destructor.",
-  "Write a Bond class deriving from Instrument that overrides describe().",
-  "Copy a Bond into an Instrument variable by value and call describe() on it — confirm it prints the base class's description (sliced), not Bond's.",
-  "Now call describe() through an Instrument& bound to the same Bond object, and separately through a std::unique_ptr<Instrument> pointing at a heap-allocated Bond — confirm both correctly dispatch to Bond's override."
- ],
- validates:["virtual dispatch","object slicing","reference/pointer vs value semantics"],
- driver:`int main(){\n  Bond b;\n  Instrument sliced = b;\n  std::cout << sliced.describe() << "\\n";\n  Instrument& ref = b;\n  std::cout << ref.describe() << "\\n";\n  std::unique_ptr<Instrument> p = std::make_unique<Bond>();\n  std::cout << p->describe() << "\\n";\n}`,
- expected:"Instrument\nBond\nBond",
- solution:`class Instrument {\npublic:\n    virtual std::string describe() const { return "Instrument"; }\n    virtual ~Instrument() = default;\n};\n\nclass Bond : public Instrument {\npublic:\n    std::string describe() const override { return "Bond"; }\n};\n\n// Instrument sliced = b;      -> copies only the Instrument part: "Instrument"\n// Instrument& ref = b;        -> still looking at the real Bond: "Bond"\n// unique_ptr<Instrument> p... -> points at a heap Bond, dispatches: "Bond"`},
-
-{id:11, part:"polymorphism", std:"pre-11",
- title:"Why a polymorphic base needs a virtual destructor",
- primer:"A base class meant to be deleted through a pointer to that base needs a virtual destructor — otherwise only the base class's destructor runs, silently skipping any derived-class cleanup.",
+{id:7, part:"cpp11", std:"C++11",
+ title:"extern template + explicit instantiation",
+ primer:"Explicit instantiation forces a template to be compiled once for a specific type; extern template tells other translation units not to re-instantiate it themselves, trading some flexibility for build-time savings.",
  includes:["iostream"],
- hints:["Deleting a derived object through a pointer to a base class whose destructor is not virtual is undefined behavior — in practice, most compilers simply skip the derived class's destructor entirely, which is exactly the leak/bug this exercise makes visible.","Marking the base destructor virtual is enough — you don't need to (and generally shouldn't) mark every derived destructor virtual too, though override is a nice-to-have on the derived one.","This matters constantly in quant codebases: any class meant to be used polymorphically through a base pointer (an abstract Strategy, a PricingModel interface) needs a virtual destructor the moment it has even one virtual function."],
+ hints:["Explicit instantiation syntax is template class MyContainer<int>; in the .cpp file — no extern keyword there.","In the second translation unit, write extern template class MyContainer<int>; before using it, telling the compiler not to re-instantiate it there.","To actually see the compile-time savings, you need multiple .cpp files that each use MyContainer<int>, timed with and without the extern declaration."],
  bullets:[
-  "Write a BadBase / BadDerived pair where neither destructor is virtual, each printing its own name when it runs.",
-  "Write a GoodBase / GoodDerived pair identical in structure, but where GoodBase's destructor is declared virtual.",
-  "Create each derived object on the heap, store it in a pointer to its *base* type, and delete through that base pointer.",
-  "Confirm the bad pair only prints the base class's destructor message (the derived cleanup never runs), while the good pair prints both, in derived-then-base order."
+  "Write a small container class template with add() and sum() methods, split across a header and a source file.",
+  "Explicitly instantiate it for int in the source file, and declare it extern template in a second translation unit that uses it.",
+  "Time a from-scratch build of a small multi-file project with and without this, and compare."
  ],
- validates:["virtual destructors","polymorphic deletion","base-pointer ownership"],
- driver:`int main(){\n  BadBase* bad = new BadDerived();\n  delete bad;\n  std::cout << "---\\n";\n  GoodBase* good = new GoodDerived();\n  delete good;\n}`,
- expected:"~BadBase\n---\n~GoodDerived\n~GoodBase",
- solution:`class BadBase {\npublic:\n    ~BadBase() { std::cout << "~BadBase\\n"; }\n};\nclass BadDerived : public BadBase {\npublic:\n    ~BadDerived() { std::cout << "~BadDerived\\n"; }\n};\n\nclass GoodBase {\npublic:\n    virtual ~GoodBase() { std::cout << "~GoodBase\\n"; }\n};\nclass GoodDerived : public GoodBase {\npublic:\n    ~GoodDerived() override { std::cout << "~GoodDerived\\n"; }\n};\n\n// delete bad (a BadBase*) only runs ~BadBase -- undefined behavior in\n// general, but in practice the derived cleanup is simply skipped.\n// delete good (a GoodBase*) correctly runs ~GoodDerived then ~GoodBase.`},
+ validates:["explicit instantiation","build cost","ODR / linking"],
+ driver:`int main(){\n  MyContainer<int> c;\n  c.add(5); c.add(10);\n  std::cout << c.sum() << "\\n";\n}`,
+ expected:"15",
+ note:"The real lesson here — reduced compile time from one shared instantiation across TUs — doesn't show up in stdout. This driver only checks that the container works. Verify the extern-template mechanic separately, e.g. with nm on the object files or by timing the build.",
+ solution:`// MyContainer.h
+template<typename T>
+class MyContainer {
+public:
+    void add(T v) { data.push_back(v); }
+    T sum() const {
+        T s{};
+        for (auto& v : data) s += v;
+        return s;
+    }
+private:
+    std::vector<T> data;
+};
 
-{id:12, part:"polymorphism", std:"pre-11",
- title:"Multiple inheritance, the diamond problem, and virtual inheritance",
- primer:"When a class inherits from two classes that both derive from a common base, virtual inheritance ensures there's a single shared instance of that base, instead of one ambiguous copy per inheritance path.",
+// MyContainer.cpp
+#include "MyContainer.h"
+template class MyContainer<int>;   // explicit instantiation, compiled once here
+
+// other_tu.cpp
+#include "MyContainer.h"
+extern template class MyContainer<int>; // tells this TU: don't re-instantiate,
+                                         // it's already compiled elsewhere;
+                                         // link against that definition instead
+
+int main(){
+    MyContainer<int> c;
+    c.add(5); c.add(10);
+    std::cout << c.sum() << "\\n";
+}
+
+// To actually observe the win, put MyContainer<int> behind extern
+// template in several .cpp files that all use it, and time a clean
+// build with vs without the extern declaration (or check with \`nm\`
+// that only one TU emits the instantiation's symbols).`},
+
+{id:8, part:"cpp11", std:"C++11",
+ title:"decltype + trailing return types",
+ primer:"decltype inspects the declared type of an expression without evaluating it; trailing return syntax lets a function's return type be written after its parameter list, where it can reference those parameters.",
+ includes:["iostream"],
+ hints:["Trailing return syntax looks like: template<typename A, typename B> auto add(A a, B b) -> decltype(a + b) { return a + b; }","decltype on a bare identifier gives its declared type, but decltype on a parenthesized expression treats it as an lvalue expression and can yield a reference type instead.","Try decltype((x)) versus decltype(x) on the same variable inside a function to see the parenthesization difference directly."],
+ bullets:[
+  "Write a function template that adds two values of possibly-different types, using a trailing return type derived from decltype of the addition expression.",
+  "Compare decltype of the bare expression against decltype of the same expression wrapped in an extra set of parentheses, and explain why they can differ.",
+  "Construct a case involving a reference-returning expression where that difference actually changes behavior."
+ ],
+ validates:["decltype rules","trailing return","the paren trap"],
+ driver:`int main(){\n  std::cout << add(2, 3.5) << "\\n";\n}`,
+ expected:"5.5",
+ solution:`template<typename A, typename B>
+auto add(A a, B b) -> decltype(a + b) {
+    return a + b;
+}
+
+// int x = 5;
+// decltype(x)   -> int      (declared type of the bare identifier)
+// decltype((x)) -> int&     (parenthesized expr is treated as an
+//                             lvalue expression, not a name lookup,
+//                             so decltype yields a reference type)
+
+int counter = 0;
+int& getCounterRef() { return counter; }
+
+int main() {
+    // A case where the paren difference changes real behavior:
+    auto  a = getCounterRef();   // decltype(a) is int  -> independent copy
+    decltype(getCounterRef()) b = getCounterRef(); // int&, an alias
+    // (b) here is a reference-typed decltype because the expression
+    // getCounterRef() is itself an lvalue expression, matching the
+    // decltype((x)) case in spirit.
+    b = 99;
+    std::cout << counter << "\\n"; // 99: b aliases counter, a does not
+}`},
+
+{id:9, part:"cpp14", std:"C++14",
+ title:"Generic lambdas",
+ primer:"A lambda with auto parameters has its call operator implicitly turned into a template, letting one lambda body work across different argument types.",
  includes:["iostream","string"],
- hints:["Without virtual inheritance, a class inheriting from two classes that both derive from the same base ends up with two separate copies of that base's data — and any unqualified access to a shared member becomes ambiguous and fails to compile.","Declaring virtual public Animal in both Swimmer and Walker makes them share a single Animal subobject inside any further-derived class like Duck.","With virtual inheritance, the *most-derived* class becomes directly responsible for initializing the shared virtual base — Duck's constructor must call Animal's constructor directly in its mem-init-list, even though Duck doesn't directly inherit from Animal; any Animal initialization written in Swimmer or Walker's own mem-init-list is ignored when they're not the most-derived class."],
+ hints:["auto in a lambda's parameter list makes its operator() a template — that's literally what 'generic lambda' means.","The hand-written struct equivalent needs a templated operator(): template<typename A, typename B> auto operator()(A a, B b) const { return a + b; }"],
  bullets:[
-  "Write an Animal base class storing a name and a virtual speak() method.",
-  "Write Swimmer and Walker, each virtually inheriting from Animal and adding a swim() / walk() method respectively.",
-  "Write Duck inheriting from both Swimmer and Walker, and get its constructor's mem-init-list right so there's exactly one Animal subobject, correctly initialized.",
-  "Explain (in a comment) what would go wrong — ambiguous base access, or a compile error — if Swimmer and Walker inherited from Animal non-virtually instead."
+  "Write a lambda with auto parameters that adds its two arguments.",
+  "Call it with ints, doubles, and std::strings.",
+  "Desugar it by hand: write a struct with a templated call operator that behaves identically, and confirm the two are interchangeable."
  ],
- validates:["diamond inheritance","virtual inheritance","most-derived-class initialization"],
- driver:`int main(){\n  Duck d("Donald");\n  d.swim();\n  d.walk();\n  d.speak();\n  std::cout << d.name << "\\n";\n}`,
- expected:"Donald swims\nDonald walks\nDonald makes a sound\nDonald",
- solution:`class Animal {\npublic:\n    explicit Animal(std::string name) : name(std::move(name)) {}\n    virtual void speak() const { std::cout << name << " makes a sound\\n"; }\n    virtual ~Animal() = default;\n    std::string name;\n};\n\nclass Swimmer : public virtual Animal {\npublic:\n    explicit Swimmer(const std::string& name) : Animal(name) {}\n    void swim() const { std::cout << name << " swims\\n"; }\n};\n\nclass Walker : public virtual Animal {\npublic:\n    explicit Walker(const std::string& name) : Animal(name) {}\n    void walk() const { std::cout << name << " walks\\n"; }\n};\n\nclass Duck : public Swimmer, public Walker {\npublic:\n    // Duck is the most-derived class, so it must initialize the shared\n    // virtual Animal base directly -- any Animal init written inside\n    // Swimmer's or Walker's own mem-init-list is ignored here.\n    explicit Duck(const std::string& name)\n        : Animal(name), Swimmer(name), Walker(name) {}\n};\n\n// Without virtual inheritance, Duck would contain two separate Animal\n// subobjects (one via Swimmer, one via Walker) -- d.name and d.speak()\n// would both become ambiguous and fail to compile.`},
+ validates:["generic lambdas","operator() templates"],
+ driver:`int main(){\n  auto adder = [](auto a, auto b){ return a + b; };\n  std::cout << adder(2, 3) << "\\n";\n  std::cout << adder(2.5, 1.5) << "\\n";\n  std::cout << adder(std::string("foo"), std::string("bar")) << "\\n";\n}`,
+ expected:"5\n4\nfoobar",
+ solution:`#include <string>
 
-{id:13, part:"polymorphism", std:"pre-11",
- title:"CRTP: compile-time polymorphism without a vtable",
- primer:"The Curiously Recurring Template Pattern has a base class template take its own derived class as a parameter and call back into it via static_cast, giving polymorphic-style dispatch resolved entirely at compile time, with no vtable.",
+auto adder = [](auto a, auto b) { return a + b; };
+
+// desugared by hand: auto params make operator() a template
+struct AdderStruct {
+    template<typename A, typename B>
+    auto operator()(A a, B b) const { return a + b; }
+};
+
+int main() {
+    AdderStruct adderStruct;
+    std::cout << adder(2, 3) << "\\n";
+    std::cout << adderStruct(2, 3) << "\\n"; // interchangeable with the lambda
+}`},
+
+{id:10, part:"cpp14", std:"C++14",
+ title:"decltype(auto) and return deduction",
+ primer:"decltype(auto) reapplies decltype's exact-type rules — including references — to a return expression, whereas plain auto always deduces a stripped-down value type.",
  includes:["iostream"],
- hints:["The Curiously Recurring Template Pattern has the base template take its own derived class as a template parameter — class FlatPricer : public PricerBase<FlatPricer> — letting the base static_cast(this) to the derived type and call its methods directly, resolved entirely at compile time.","Because there's no virtual function involved, a CRTP base class typically adds zero bytes to the derived object's size — compare sizeof of a CRTP-based class against an otherwise-equivalent class with a virtual function (which needs a hidden vtable pointer, usually 8 bytes on a 64-bit target).","The tradeoff for the performance win is flexibility: you can't hold a heterogeneous collection of 'anything derived from PricerBase' behind one pointer type the way you can with real virtual dispatch — each instantiation is its own distinct type."],
+ hints:["decltype(auto) re-applies decltype's rules to the return expression, preserving references; plain auto always deduces a value type and strips references.","invoke(getRef) = 42 only compiles if invoke's return type is genuinely int& — swap decltype(auto) for auto and see what breaks."],
  bullets:[
-  "Write a PricerBase<Derived> class template whose price() method calls static_cast<const Derived*>(this)->priceImpl().",
-  "Write FlatPricer and SpreadPricer, each deriving from PricerBase<Self> and implementing priceImpl().",
-  "Write a totalCost(const PricerBase<P>&, int qty) function template that works for any pricer type via the CRTP base.",
-  "Compare sizeof(FlatPricer) against sizeof of an otherwise-identical class using a real virtual function, and explain the difference in terms of vtable pointers."
+  "Write a forwarding wrapper function that calls a callable with forwarded arguments and returns exactly what the callable returns, using decltype(auto) as the return type.",
+  "Swap in a plain auto return type instead, with a callable that returns a reference to an external variable, and show how the observable behavior changes.",
+  "Explain the underlying rule: auto strips references and cv-qualifiers on deduction; decltype(auto) doesn't."
  ],
- validates:["CRTP","static polymorphism","vtable overhead vs. templates"],
- driver:`int main(){\n  FlatPricer fp;\n  SpreadPricer sp(99.5, 100.5);\n  std::cout << fp.price() << " " << sp.price() << "\\n";\n  std::cout << totalCost(fp, 10) << " " << totalCost(sp, 4) << "\\n";\n  std::cout << sizeof(FlatPricer) << " " << sizeof(VirtualPricer) << "\\n";\n}`,
- expected:"100 100\n1000 400\n1 8",
- solution:`template <typename Derived>\nclass PricerBase {\npublic:\n    double price() const {\n        return static_cast<const Derived*>(this)->priceImpl();\n    }\n};\n\nclass FlatPricer : public PricerBase<FlatPricer> {\npublic:\n    double priceImpl() const { return 100.0; }\n};\n\nclass SpreadPricer : public PricerBase<SpreadPricer> {\npublic:\n    SpreadPricer(double bid, double ask) : bid_(bid), ask_(ask) {}\n    double priceImpl() const { return (bid_ + ask_) / 2.0; }\nprivate:\n    double bid_, ask_;\n};\n\ntemplate <typename P>\ndouble totalCost(const PricerBase<P>& pricer, int qty) {\n    return pricer.price() * qty;\n}\n\n// For comparison: a virtual-dispatch equivalent needs a vptr, so it costs\n// one pointer's worth of size even with no data members of its own.\nclass VirtualPricer {\npublic:\n    virtual double price() const { return 100.0; }\n    virtual ~VirtualPricer() = default;\n};`},
+ validates:["decltype(auto)","reference preservation"],
+ driver:`int counter = 0;\nint& getRef(){ return counter; }\n\nint main(){\n  invoke(getRef) = 42;\n  std::cout << counter << "\\n";\n}`,
+ expected:"42",
+ solution:`template<typename F, typename... Args>
+decltype(auto) invoke(F&& f, Args&&... args) {
+    return f(std::forward<Args>(args)...);
+}
 
-{id:14, part:"polymorphism", std:"pre-11",
- title:"Pure virtual interfaces and polymorphic ownership",
- primer:"A pure virtual function (= 0) makes a class abstract and impossible to instantiate directly — it exists purely to define a contract that concrete derived classes are required to implement.",
- includes:["iostream","vector","memory"],
- hints:["A pure virtual function (= 0) makes the class abstract — the compiler will refuse to let you construct a bare RiskModel, only its concrete derived classes.","Because RiskModel needs a virtual destructor for safe polymorphic deletion, storing derived objects behind std::unique_ptr<RiskModel> gives you both correct cleanup and value semantics you can move around.","This is the standard shape of a 'strategy' interface in quant systems: one abstract contract (var()), several interchangeable concrete implementations, iterated over via a container of base-class pointers."],
+// Swapping in plain \`auto\`:
+// template<typename F, typename... Args>
+// auto invokeAuto(F&& f, Args&&... args) {
+//     return f(std::forward<Args>(args)...);
+// }
+//
+// int counter = 0;
+// int& getRef(){ return counter; }
+// invokeAuto(getRef) = 42;   // ERROR: auto strips the reference, so
+//                            // invokeAuto returns int by value -- the
+//                            // result is a temporary/prvalue and can't
+//                            // be assigned to.
+//
+// decltype(auto) re-applies decltype's rules to the return expression
+// \`f(...)\`, so if the callable returns int&, invoke's return type is
+// genuinely int& and invoke(getRef) = 42 assigns straight through to
+// counter. Plain auto always deduces a stripped value type -- no
+// references, no top-level cv-qualifiers -- regardless of what the
+// expression's type actually was.`},
+
+{id:11, part:"cpp14", std:"C++14",
+ title:"Variable templates",
+ primer:"A variable template parameterizes a single value on a template parameter, letting you write a constant like pi<T> that resolves per type, used like a variable rather than a function call.",
+ includes:["iostream","iomanip"],
+ hints:["Syntax: template<typename T> constexpr T pi = T(3.14159265358979323846);","Use it like a variable at a specific type — pi<float>, pi<double> — no parentheses, unlike a function template."],
  bullets:[
-  "Write an abstract RiskModel class with a pure virtual var(double notional) const method and a virtual destructor.",
-  "Write ParametricVar and HistoricalVar concrete implementations with different internal parameters and formulas.",
-  "Attempt to instantiate a bare RiskModel directly and read the compiler's error about the pure virtual function — then remove that attempt.",
-  "Build a std::vector<std::unique_ptr<RiskModel>> holding one of each concrete model, and sum var(1000000.0) across all of them."
+  "Write a variable template that holds the value of pi at whatever floating-point type it's instantiated with.",
+  "Use it at both float and double.",
+  "Before using the standard library's version, hand-roll your own variable template that mimics std::is_same_v, to feel why that kind of convenience alias exists."
  ],
- validates:["pure virtual functions","abstract base classes","polymorphic containers"],
- driver:`int main(){\n  std::vector<std::unique_ptr<RiskModel>> models;\n  models.push_back(std::make_unique<ParametricVar>(0.02));\n  models.push_back(std::make_unique<HistoricalVar>(0.045));\n  double total = 0;\n  for (const auto& m : models) {\n    total += m->var(1000000.0);\n  }\n  std::cout << total << "\\n";\n}`,
- expected:"91600",
- solution:`class RiskModel {\npublic:\n    virtual double var(double notional) const = 0;\n    virtual ~RiskModel() = default;\n};\n\nclass ParametricVar : public RiskModel {\npublic:\n    explicit ParametricVar(double volatility) : volatility_(volatility) {}\n    double var(double notional) const override {\n        constexpr double zScore99 = 2.33; // 99% one-tailed confidence\n        return notional * volatility_ * zScore99;\n    }\nprivate:\n    double volatility_;\n};\n\nclass HistoricalVar : public RiskModel {\npublic:\n    explicit HistoricalVar(double lossQuantile) : lossQuantile_(lossQuantile) {}\n    double var(double notional) const override {\n        return notional * lossQuantile_;\n    }\nprivate:\n    double lossQuantile_;\n};\n\n// RiskModel model; would fail to compile: "cannot declare variable ... to\n// be of abstract type" because var() is pure virtual.`},
+ validates:["variable templates"],
+ driver:`int main(){\n  std::cout << std::fixed << std::setprecision(2);\n  std::cout << pi<float> << "\\n";\n  std::cout << pi<double> << "\\n";\n  std::cout << std::boolalpha << is_same_v<int,int> << " " << is_same_v<int,double> << "\\n";\n}`,
+ expected:"3.14\n3.14\ntrue false",
+ solution:`template<typename T>
+constexpr T pi = T(3.14159265358979323846);
 
-{id:15, part:"idioms", std:"C++11",
- title:"PIMPL: hiding implementation behind a unique_ptr",
- primer:"The Pointer-to-Implementation idiom hides a class's private data behind a pointer to a forward-declared, incomplete type, so changing the implementation's internals doesn't force every dependent file to recompile.",
- includes:["iostream","map","memory"],
- hints:["The class only forward-declares its Impl struct in the header (struct Impl; std::unique_ptr<Impl> pImpl;) — the full definition of Impl lives in the source file, where client code never sees it and never needs to recompile against it.","std::unique_ptr<Impl> requires Impl to be a *complete* type wherever it's destroyed — so the destructor (even a defaulted one) must be defined in the source file, after Impl's definition, not implicitly generated in the header.","Because the destructor is user-declared (even as = default in the .cpp), the compiler won't implicitly generate move operations — you need to explicitly default the move constructor and move assignment as well if you want the class to stay movable."],
+// hand-rolled equivalent of std::is_same_v, to see why it's convenient
+template<typename T, typename U>
+constexpr bool is_same_v = false;
+
+template<typename T>
+constexpr bool is_same_v<T, T> = true; // partial specialization when equal
+
+int main() {
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << pi<float> << "\\n";
+    std::cout << pi<double> << "\\n";
+    std::cout << std::boolalpha
+               << is_same_v<int,int> << " " << is_same_v<int,double> << "\\n";
+}`},
+
+{id:12, part:"cpp14", std:"C++14",
+ title:"Relaxed constexpr functions",
+ primer:"constexpr marks a function as potentially evaluable at compile time; C++14 loosened the rules so ordinary imperative code — loops, local variables — is allowed inside it, not just a single return expression.",
+ includes:["iostream"],
+ hints:["Before C++14, a constexpr function body could only be a single return statement — no loops, no local mutable variables.","C++14 relaxes that: ordinary imperative code (loops, if statements, local variables) is now allowed inside a constexpr function, as long as it's still computable at compile time when needed."],
  bullets:[
-  "Design an OrderBook class using the PIMPL idiom: the public class only holds a std::unique_ptr<Impl> to a forward-declared nested struct, with addOrder() and bestBid() as its public interface.",
-  "Define the real data (a std::map<double,int> of price to quantity) inside the Impl struct, defined out-of-line together with the class's out-of-line constructor and destructor.",
-  "Explicitly default the move constructor and move assignment operator out-of-line (after Impl is a complete type), and delete the copy operations.",
-  "Explain what PIMPL buys you in a large codebase: changing Impl's internals doesn't change OrderBook's size or its header, so dependents don't need to recompile."
+  "Write a constexpr function that computes a factorial using a loop and local mutable state — something illegal before C++14's relaxed constexpr rules.",
+  "Write the C++11-legal equivalent, restricted to a single recursive return statement, and compare.",
+  "Use static_assert on both to prove they're evaluated at compile time."
  ],
- validates:["PIMPL idiom","incomplete types + unique_ptr","binary/compile firewalling"],
- driver:`int main(){\n  OrderBook book;\n  book.addOrder(101.5, 100);\n  book.addOrder(102.25, 50);\n  std::cout << book.bestBid() << "\\n";\n  OrderBook moved(std::move(book));\n  std::cout << moved.bestBid() << "\\n";\n}`,
- expected:"102.25\n102.25",
- solution:`// order_book.h\nclass OrderBook {\npublic:\n    OrderBook();\n    ~OrderBook();\n    OrderBook(OrderBook&&) noexcept;\n    OrderBook& operator=(OrderBook&&) noexcept;\n    OrderBook(const OrderBook&) = delete;\n    OrderBook& operator=(const OrderBook&) = delete;\n\n    void addOrder(double price, int qty);\n    double bestBid() const;\n\nprivate:\n    struct Impl;                    // incomplete here -- clients never see it\n    std::unique_ptr<Impl> pImpl;\n};\n\n// order_book.cpp\nstruct OrderBook::Impl {\n    std::map<double, int> book;     // price -> quantity\n};\n\nOrderBook::OrderBook() : pImpl(std::make_unique<Impl>()) {}\n// Defined here, not in the header: unique_ptr<Impl>'s destructor needs\n// Impl to be a complete type.\nOrderBook::~OrderBook() = default;\nOrderBook::OrderBook(OrderBook&&) noexcept = default;\nOrderBook& OrderBook::operator=(OrderBook&&) noexcept = default;\n\nvoid OrderBook::addOrder(double price, int qty) {\n    pImpl->book[price] = qty;\n}\n\ndouble OrderBook::bestBid() const {\n    return pImpl->book.rbegin()->first; // highest price = best bid\n}\n\n// Changing Impl's internals never changes OrderBook's size or header, so\n// files that only use OrderBook don't need to recompile.`},
+ validates:["constexpr relaxation","loop vs recursion"],
+ driver:`int main(){\n  static_assert(factorial(5) == 120);\n  std::cout << factorial(5) << "\\n";\n}`,
+ expected:"120",
+ solution:`// C++14: loops and local mutable state are fine inside constexpr
+constexpr int factorial(int n) {
+    int result = 1;
+    for (int i = 2; i <= n; ++i) result *= i;
+    return result;
+}
 
-{id:16, part:"idioms", std:"C++11",
- title:"Mixins via CRTP + the Empty Base Optimization",
- primer:"A mixin is a small, typically stateless class meant purely to be inherited from for its behavior; the Empty Base Optimization lets such an empty base class add zero bytes to a derived object, unlike an empty class held as a data member.",
+// C++11-legal equivalent: a single recursive return statement, no
+// local mutable variables, no loops
+constexpr int factorial11(int n) {
+    return n <= 1 ? 1 : n * factorial11(n - 1);
+}
+
+int main() {
+    static_assert(factorial(5) == 120,   "computed at compile time");
+    static_assert(factorial11(5) == 120, "computed at compile time");
+    std::cout << factorial(5) << "\\n";
+}`},
+
+{id:13, part:"cpp17", std:"C++17",
+ title:"Fold expressions",
+ primer:"A fold expression collapses an entire parameter pack down to a single value by repeatedly applying a binary operator across it, without you writing the recursion by hand.",
+ includes:["iostream"],
+ hints:["A unary fold for summing a pack looks like (args + ...) — try both fold directions and see if parenthesization changes anything here.","Folding over << for printing looks like (std::cout << ... << args), but you'll need to handle separators/spacing yourself since folds don't insert extra characters.","To see left-to-right versus right-to-left folds actually differ, you need a non-associative or order-sensitive operation — plain integer addition won't show a difference, so reach for something like ordered string concatenation instead."],
+ bullets:[
+  "Rewrite a sum-of-a-pack function using a fold expression.",
+  "Write a function that prints every argument in a pack separated by single spaces with a trailing newline, using a fold over the stream-insertion operator.",
+  "Write a function that returns whether every argument in a pack is true, using a fold over logical AND.",
+  "Construct one example where folding the same pack left-to-right versus right-to-left produces genuinely different results, to prove you understand the distinction, not just recite it."
+ ],
+ validates:["unary / binary folds","left vs right fold"],
+ driver:`int main(){\n  std::cout << sum(1,2,3,4) << "\\n";\n  printAll(1, "two", 3.0);\n  std::cout << std::boolalpha << allTrue(true,true,true) << " " << allTrue(true,false,true) << "\\n";\n}`,
+ expected:"10\n1 two 3\ntrue false",
+ solution:`template<typename... Args>
+auto sum(Args... args) {
+    return (args + ...); // unary right fold
+}
+
+template<typename... Args>
+void printAll(Args... args) {
+    ((std::cout << args << ' '), ...); // fold over the comma operator
+    std::cout << '\\n';
+}
+
+template<typename... Args>
+bool allTrue(Args... args) {
+    return (args && ...);
+}
+
+// Left- vs right-fold producing genuinely different results:
+// addition is associative, so it can't show a difference -- use a
+// non-associative operator like subtraction instead.
+template<typename... Args>
+auto rightFoldSub(Args... args) { return (args - ...); }      // a-(b-(c-...))
+template<typename... Args>
+auto leftFoldSub(Args... args)  { return (... - args); }      // ((a-b)-c)-...
+
+int main() {
+    // rightFoldSub(1,2,3) == 1-(2-3) == 2
+    // leftFoldSub(1,2,3)  == (1-2)-3 == -4
+    std::cout << rightFoldSub(1,2,3) << " " << leftFoldSub(1,2,3) << "\\n";
+}`},
+
+{id:14, part:"cpp17", std:"C++17",
+ title:"if constexpr",
+ primer:"if constexpr evaluates its condition at compile time and completely discards the untaken branch during instantiation, so that branch never needs to compile for the current type — unlike an ordinary runtime if.",
+ includes:["iostream","string","vector"],
+ hints:["std::is_arithmetic_v<T>, a check for a nested type like value_type or similar, and a catch-all else branch are enough to drive the three-way if constexpr dispatch.","Because if constexpr discards the untaken branch during instantiation, code in that branch never needs to be valid for the current T — unlike a runtime if, where every branch must compile for every call.","Tag dispatch achieves the same effect the old way: overload on a dummy tag type (e.g. std::true_type/std::false_type) selected via a trait, instead of branching inside one function body."],
+ bullets:[
+  "Write a single function template that behaves completely differently depending on whether its argument's type is arithmetic, a std::string, or something else with begin()/end(), using if constexpr branches rather than overloads.",
+  "Reimplement the same logic using C++11-style tag dispatch and compare the verbosity.",
+  "Explain precisely why the untaken if constexpr branch doesn't need to compile for a given type, unlike an ordinary runtime if."
+ ],
+ validates:["if constexpr","discarded branches","vs tag dispatch"],
+ driver:`int main(){\n  process(5);\n  process(std::string("hi"));\n  process(std::vector<int>{1,2,3});\n}`,
+ expected:"arithmetic: 5\nstring: hi\ncontainer of size 3",
+ solution:`#include <type_traits>
+
+template<typename T>
+void process(T const& val) {
+    if constexpr (std::is_arithmetic_v<T>) {
+        std::cout << "arithmetic: " << val << "\\n";
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        std::cout << "string: " << val << "\\n";
+    } else {
+        std::cout << "container of size " << val.size() << "\\n";
+    }
+}
+
+// C++11-style tag dispatch equivalent -- considerably more verbose
+struct ArithmeticTag {};
+struct StringTag {};
+struct ContainerTag {};
+
+template<typename T>
+struct DispatchTag {
+    using type = ContainerTag;
+};
+template<typename T>
+struct DispatchTagArithmetic { using type = ArithmeticTag; };
+
+template<typename T>
+void processImpl(T const& val, ArithmeticTag) {
+    std::cout << "arithmetic: " << val << "\\n";
+}
+void processImpl(std::string const& val, StringTag) {
+    std::cout << "string: " << val << "\\n";
+}
+template<typename T>
+void processImpl(T const& val, ContainerTag) {
+    std::cout << "container of size " << val.size() << "\\n";
+}
+// selecting the right tag/overload for an arbitrary T still requires
+// its own trait-based machinery -- if constexpr collapses all of this
+// into one function body.
+
+// Why the untaken if constexpr branch doesn't need to compile for a
+// given T: if constexpr is evaluated during template instantiation,
+// and the compiler discards the statements of the branch not taken
+// before ever trying to fully compile them for that specific T -- only
+// enough parsing happens to know where the branch ends. An ordinary
+// runtime \`if\` has both branches compiled as ordinary code for every
+// T, since the condition is only known at runtime.`},
+
+{id:15, part:"cpp17", std:"C++17",
+ title:"CTAD + deduction guides",
+ primer:"Class template argument deduction lets you construct an object of a class template without spelling out its template arguments, inferring them from the constructor call — sometimes with help from an explicit deduction guide.",
+ includes:["iostream","vector"],
+ hints:["For your own wrapper class, a constructor taking a single T value parameter is often enough for CTAD to deduce the class template argument automatically — no explicit deduction guide required in the simple case.","std::vector v1{1} uses list-initialization and picks the initializer_list constructor (one element with value 1), while std::vector<int> v2(1) picks the size constructor (one default-valued element) — that's the source of the difference.","A custom deduction guide looks like a function declaration near the class: template<typename T> Box(T) -> Box<T>;"],
+ bullets:[
+  "Construct a std::pair and a std::vector with no explicit template arguments, relying on constructor-driven deduction.",
+  "Write your own single-member wrapper class template and confirm brace-initializing it from a value deduces the right template argument with no extra code.",
+  "Compare constructing a std::vector from a single brace-enclosed element versus a single parenthesized element, and explain why the two produce different results.",
+  "Write a custom deduction guide for a case where the implicit one deduces the wrong thing."
+ ],
+ validates:["CTAD","deduction guides","constructor-driven deduction"],
+ driver:`int main(){\n  Box b{42};\n  std::cout << b.value << "\\n";\n\n  std::vector v1{1};\n  std::vector<int> v2(1);\n  std::cout << v1.size() << " " << v1[0] << "\\n";\n  std::cout << v2.size() << " " << v2[0] << "\\n";\n}`,
+ expected:"42\n1 1\n1 0",
+ solution:`std::pair p{1, 2.5};     // deduced std::pair<int, double>
+std::vector v{1, 2, 3};  // deduced std::vector<int>
+
+template<typename T>
+struct Box {
+    T value;
+    Box(T v) : value(v) {} // single-T constructor is enough for CTAD
+};
+// Box b{42};  deduces Box<int>, no deduction guide required
+
+// std::vector v1{1}  -> brace-init picks the initializer_list ctor:
+//                       one element, value 1
+// std::vector<int> v2(1) -> parens pick the (size_t count) ctor:
+//                            one default-valued element, value 0
+
+// A custom deduction guide, for a case where the implicit guide
+// (from the constructor) would deduce the wrong thing:
+template<typename T>
+struct Wrapper {
+    T value;
+};
+template<typename T>
+Wrapper(T) -> Wrapper<T>;   // explicit guide: deduce Wrapper<T> from a T`},
+
+{id:16, part:"cpp17", std:"C++17",
+ title:"void_t + the detection idiom",
+ primer:"The detection idiom uses SFINAE with std::void_t to test, at compile time, whether some expression involving a type is well-formed — a way of asking 'does this type support this operation?' as a trait.",
+ includes:["iostream","vector"],
+ hints:["The void_t trick: a primary template inheriting std::false_type, plus a partial specialization using std::void_t<decltype(std::declval<T>().size())>> that inherits std::true_type instead.","if constexpr can branch on has_size<T>::value directly inside a single function template.","The enable_if version needs two separate overloads, each gated with typename std::enable_if<has_size<T>::value, ...>::type, so only one is ever a valid candidate for a given T."],
+ bullets:[
+  "Write a trait that detects, at compile time, whether a type has a .size() member, using a void_t-based partial specialization.",
+  "Use that trait with if constexpr to write a function that prints the size if the argument has one, and a fallback message otherwise.",
+  "Reimplement the same function as two overloads gated by enable_if on the return type instead of if constexpr."
+ ],
+ validates:["detection idiom","void_t","enable_if"],
+ driver:`int main(){\n  print_size(std::vector<int>{1,2,3});\n  print_size(42);\n}`,
+ expected:"size: 3\nno size",
+ solution:`#include <type_traits>
+#include <vector>
+
+// primary template: no .size() -> false_type
+template<typename T, typename = void>
+struct has_size : std::false_type {};
+
+// partial specialization: SFINAEs away unless T.size() is valid
+template<typename T>
+struct has_size<T, std::void_t<decltype(std::declval<T>().size())>>
+    : std::true_type {};
+
+template<typename T>
+void print_size(T const& val) {
+    if constexpr (has_size<T>::value) {
+        std::cout << "size: " << val.size() << "\\n";
+    } else {
+        std::cout << "no size\\n";
+    }
+}
+
+// reimplemented as two enable_if-gated overloads
+template<typename T>
+typename std::enable_if<has_size<T>::value, void>::type
+print_size2(T const& val) {
+    std::cout << "size: " << val.size() << "\\n";
+}
+
+template<typename T>
+typename std::enable_if<!has_size<T>::value, void>::type
+print_size2(T const& val) {
+    std::cout << "no size\\n";
+}`},
+
+{id:17, part:"cpp17", std:"C++17",
+ title:"auto non-type template parameters",
+ primer:"Since C++17, a non-type template parameter can be declared auto, letting its type be deduced from whatever value it's instantiated with instead of being fixed to one type up front.",
+ includes:["iostream"],
+ hints:["Declare the parameter as template<auto V> struct Const { static constexpr auto value = V; }; — no separate type parameter needed.","Because V's type is deduced from whatever you instantiate with, Const<5> and Const<'a'> both work without writing out separate type/value parameter pairs."],
+ bullets:[
+  "Write a class template parameterized on a single non-type template parameter declared as auto, exposing that value as a static constexpr member.",
+  "Instantiate it with an int, a char, and an enum value with no need to write separate template parameter lists for each type."
+ ],
+ validates:["auto NTTPs"],
+ driver:`int main(){\n  std::cout << Const<5>::value << "\\n";\n  std::cout << Const<'a'>::value << "\\n";\n}`,
+ expected:"5\na",
+ solution:`template<auto V>
+struct Const {
+    static constexpr auto value = V;
+};
+
+enum class Color { Red, Green, Blue };
+
+int main() {
+    std::cout << Const<5>::value << "\\n";
+    std::cout << Const<'a'>::value << "\\n";
+    // Const<Color::Red>::value also works, no separate parameter list
+    // for each type needed -- V's type is deduced per-instantiation.
+}`},
+
+{id:18, part:"cpp17", std:"C++14/17",
+ title:"Template template parameters",
+ primer:"A template template parameter lets a class template take another template — not a concrete type — as one of its parameters, so you can parameterize on 'which container' rather than only 'which element type'.",
+ includes:["iostream","vector","deque"],
+ hints:["The class template's parameter list looks like template<typename T, template<typename...> class Container = std::vector> class Wrapper { Container<T> data; ... };","std::deque and std::vector share enough of an interface (push_back, iteration) that the same insert()/print() implementation should work unmodified for both."],
+ bullets:[
+  "Write a wrapper class template parameterized both on an element type and on which container template to store it in, defaulting to std::vector.",
+  "Give it methods to insert an element and to print all elements space-separated with a trailing newline.",
+  "Instantiate it with both std::vector and std::deque as the container argument."
+ ],
+ validates:["template template params"],
+ driver:`int main(){\n  Wrapper<int> w;\n  w.insert(1); w.insert(2); w.insert(3);\n  w.print();\n\n  Wrapper<int, std::deque> w2;\n  w2.insert(4); w2.insert(5);\n  w2.print();\n}`,
+ expected:"1 2 3\n4 5",
+ solution:`#include <vector>
+#include <deque>
+
+template<typename T, template<typename...> class Container = std::vector>
+class Wrapper {
+public:
+    void insert(T v) { data.push_back(v); }
+    void print() const {
+        for (auto& v : data) std::cout << v << ' ';
+        std::cout << '\\n';
+    }
+private:
+    Container<T> data;
+};
+
+int main() {
+    Wrapper<int> w;
+    w.insert(1); w.insert(2); w.insert(3);
+    w.print();
+
+    Wrapper<int, std::deque> w2;
+    w2.insert(4); w2.insert(5);
+    w2.print();
+}`},
+
+{id:19, part:"cpp20", std:"C++20",
+ title:"Concepts",
+ primer:"Concepts give named, checkable constraints on template parameters, replacing ad hoc SFINAE tricks with syntax the compiler can check directly and report clear errors against.",
+ includes:["iostream","vector"],
+ hints:["A concept can wrap the same requires-expression as exercise 16: requires(T t) { { t.size() } -> std::convertible_to<std::size_t>; }","Trailing requires clause: template<typename T> requires HasSize<T> void print_size(T const&); abbreviated syntax: void print_size(HasSize auto const&);","Compose concepts with &&: a Container concept could require HasSize<T> plus t.begin()/t.end()."],
+ bullets:[
+  "Redo exercise 16 with a concept instead of the void_t trait, requiring that .size() exists and is convertible to size_t.",
+  "Constrain your print function two ways: a trailing requires clause, and abbreviated function template syntax.",
+  "Compose a second concept from the first plus a requirement that begin() and end() exist.",
+  "Call your function with a type that fails the concept and compare the resulting error message to the void_t version from exercise 16 (this part isn't stdout-checkable — read it yourself)."
+ ],
+ validates:["requires expr vs clause","concept composition","abbreviated templates"],
+ driver:`int main(){\n  print_size(std::vector<int>{1,2,3,4});\n}`,
+ expected:"size: 4",
+ solution:`#include <concepts>
+#include <vector>
+
+template<typename T>
+concept HasSize = requires(T t) {
+    { t.size() } -> std::convertible_to<std::size_t>;
+};
+
+// trailing requires clause
+template<typename T>
+requires HasSize<T>
+void print_size(T const& val) {
+    std::cout << "size: " << val.size() << "\\n";
+}
+
+// abbreviated function template syntax (equivalent, more concise)
+// void print_size(HasSize auto const& val) {
+//     std::cout << "size: " << val.size() << "\\n";
+// }
+
+// composed concept
+template<typename T>
+concept Container = HasSize<T> && requires(T t) {
+    t.begin();
+    t.end();
+};
+
+// print_size(42) fails the HasSize constraint. Compared to the void_t
+// version from exercise 16, the compiler reports directly that int
+// does not satisfy HasSize, right at the call site -- rather than a
+// long substitution-failure trace originating deep in <type_traits>.`},
+
+{id:20, part:"cpp20", std:"C++20",
+ title:"Template lambdas with explicit template params",
+ primer:"C++20 lets a lambda declare its own explicit template parameter list, giving you a named type inside the lambda body instead of only an opaque auto parameter.",
+ includes:["iostream","vector"],
+ hints:["The syntax is []<typename T>(std::vector<T> const& v){ ... } — the template parameter list goes right after the capture brackets, before the function parameter list.","Because T is now a named type rather than something hidden behind auto, you can use it directly in the body, e.g. sizeof(T)."],
+ bullets:[
+  "Rewrite a generic lambda from exercise 9 to declare its own explicit template parameter instead of relying on auto parameters.",
+  "Use that named type parameter inside the lambda body somewhere an auto parameter couldn't give you access to it — e.g. to print its size."
+ ],
+ validates:["explicit lambda template params"],
+ driver:`int main(){\n  auto f = []<typename T>(std::vector<T> const& v){\n    std::cout << "vector of " << v.size() << " elements, sizeof(T)=" << sizeof(T) << "\\n";\n  };\n  f(std::vector<int>{1,2,3});\n}`,
+ expected:"vector of 3 elements, sizeof(T)=4",
+ note:"Assumes sizeof(int) == 4, true on essentially every mainstream compiler/platform today. If yours differs, just confirm the number matches sizeof(int) on your system.",
+ solution:`#include <vector>
+
+auto f = []<typename T>(std::vector<T> const& v) {
+    std::cout << "vector of " << v.size()
+               << " elements, sizeof(T)=" << sizeof(T) << "\\n";
+};
+
+int main() {
+    f(std::vector<int>{1, 2, 3});
+    // T is a named type here, usable directly (sizeof(T), declaring
+    // locals of type T, etc.) -- an \`auto\` parameter only gives you an
+    // opaque deduced parameter, with no name for the type itself.`},
+
+{id:21, part:"cpp20", std:"C++20",
+ title:"CRTP — Curiously Recurring Template Pattern",
+ primer:"The Curiously Recurring Template Pattern has a base class template take its own derived class as a parameter, enabling compile-time ('static') polymorphism with no virtual functions or vtable involved.",
+ includes:["iostream","iomanip"],
+ hints:["The base class template takes the derived type as its own parameter, then calls back into it via static_cast<const Derived*>(this)->areaImpl().","Because everything resolves at compile time through static_cast, there's no vtable pointer or virtual dispatch — that's the point of comparing the generated assembly against a virtual-function version.","The free function that accepts 'any shape built this way' should be a function template parameterized on Derived, taking const Shape<Derived>& (or deducing Derived directly)."],
+ bullets:[
+  "Write a base class template that implements static polymorphism: it takes the derived type as a template parameter and calls an implementation method on the derived class through a static_cast of itself, with no virtual functions anywhere.",
+  "Derive a circle type and a square type from it, each providing its own area computation.",
+  "Write a free function that accepts any shape built this way and prints its area.",
+  "Implement the same thing with a classic virtual base class and compare the generated -O2 assembly (e.g. on godbolt.org) — not stdout-checkable, do this by inspection."
+ ],
+ validates:["CRTP","static vs dynamic polymorphism","vtable cost"],
+ driver:`int main(){\n  Circle c{2.0};\n  Square s{3.0};\n  std::cout << std::fixed << std::setprecision(2);\n  std::cout << c.area() << "\\n";\n  std::cout << s.area() << "\\n";\n}`,
+ expected:"12.57\n9.00",
+ solution:`template<typename Derived>
+struct Shape {
+    double area() const {
+        // static_cast, resolved entirely at compile time -- no vtable
+        return static_cast<const Derived*>(this)->areaImpl();
+    }
+};
+
+struct Circle : Shape<Circle> {
+    double r;
+    Circle(double r) : r(r) {}
+    double areaImpl() const { return 3.14159265358979323846 * r * r; }
+};
+
+struct Square : Shape<Square> {
+    double s;
+    Square(double s) : s(s) {}
+    double areaImpl() const { return s * s; }
+};
+
+template<typename Derived>
+void printArea(Shape<Derived> const& shape) {
+    std::cout << shape.area() << "\\n";
+}
+
+int main() {
+    Circle c{2.0};
+    Square s{3.0};
+    std::cout << std::fixed << std::setprecision(2);
+    printArea(c);
+    printArea(s);
+}
+
+// A classic virtual-dispatch version (struct Shape { virtual double
+// area() const = 0; }; ...) adds a vtable pointer per object and an
+// indirect call at -O2; the CRTP version above should inline area()
+// completely for a known Derived, with no vtable in the generated
+// assembly at all -- compare on godbolt.org with -O2.`},
+
+{id:22, part:"cpp20", std:"C++11→20",
+ title:"constexpr vs consteval, three ways",
+ primer:"consteval marks a function as an 'immediate function' — it must be evaluated at compile time for every call with no runtime fallback, unlike an ordinary constexpr function which can run at compile time or at runtime.",
+ includes:["iostream"],
+ hints:["The C++11 recursive version needs a primary template plus a template<> struct Factorial<0> base-case specialization, since C++11 forbids constexpr loops.","The C++14 relaxed-constexpr version can use a plain for-loop inside a constexpr function, just like exercise 12.","A consteval function must be evaluated at compile time for every call with no runtime fallback — calling it with a runtime-only argument should fail to compile, unlike an ordinary constexpr function which would just fall back to running at runtime."],
+ bullets:[
+  "Implement a compile-time factorial three separate ways: as a C++11 recursive template with a base-case specialization, as a C++14-style relaxed-constexpr function with a loop, and as a C++20 consteval function.",
+  "Use static_assert to confirm all three are evaluated at compile time.",
+  "Try calling the consteval version with an argument that isn't known at compile time, and read the compiler's rejection (not stdout-checkable — read the error yourself)."
+ ],
+ validates:["constexpr vs consteval","legacy template metaprogramming"],
+ driver:`int main(){\n  static_assert(Factorial<5>::value == 120);\n  static_assert(factorial14(5) == 120);\n  constexpr int x = factorial20(5);\n  std::cout << Factorial<5>::value << " " << factorial14(5) << " " << x << "\\n";\n}`,
+ expected:"120 120 120",
+ solution:`// 1) C++11: recursive template + base-case specialization
+template<int N>
+struct Factorial {
+    static constexpr int value = N * Factorial<N - 1>::value;
+};
+template<>
+struct Factorial<0> {
+    static constexpr int value = 1;
+};
+
+// 2) C++14: relaxed constexpr with an ordinary loop
+constexpr int factorial14(int n) {
+    int result = 1;
+    for (int i = 2; i <= n; ++i) result *= i;
+    return result;
+}
+
+// 3) C++20: consteval -- must run at compile time, every call
+consteval int factorial20(int n) {
+    int result = 1;
+    for (int i = 2; i <= n; ++i) result *= i;
+    return result;
+}
+
+int main() {
+    static_assert(Factorial<5>::value == 120);
+    static_assert(factorial14(5) == 120);
+    constexpr int x = factorial20(5);
+    std::cout << Factorial<5>::value << " " << factorial14(5) << " " << x << "\\n";
+
+    // int n;
+    // std::cin >> n;
+    // factorial20(n);  // ERROR: "call to consteval function 'factorial20'
+    //                  // is not a constant expression" -- n is a runtime
+    //                  // value, and consteval allows no runtime fallback,
+    //                  // unlike ordinary constexpr which would just run
+    //                  // factorial20 at runtime instead.
+}`},
+
+{id:23, part:"cpp20", std:"capstone",
+ title:"Capstone: a tiny type-safe Variant",
+ primer:"A tagged union (variant) stores exactly one of several possible alternative types at a time, tracking which is active and handling construction/destruction manually since the alternatives share the same storage.",
  includes:["iostream","string"],
- hints:["A mixin is a small class template meant to be inherited from purely to add behavior — Loggable<T> and Comparable<T> here don't hold any data of their own, they just add methods that operate through a CRTP-style static_cast(this).","A class can inherit from any number of these empty mixins at once via multiple inheritance, composing behavior without duplicating code across unrelated classes.","The Empty Base Optimization lets an empty base class (like these mixins) add zero bytes to a derived object's size, because the base and the first derived member are allowed to share the same address — contrast that with making an empty class a *member* instead of a base, where it must get its own distinct address and typically adds padding."],
+ hints:["Use aligned raw storage (e.g. alignas(...) std::byte buffer[max_size]) sized for the largest alternative, and placement-new the active object into it with new (buffer) T(...).","Track which alternative is active with an index or type-tag, and explicitly call the matching destructor (ptr->~T()) before switching to a different alternative.","get<T>() should assert the active type actually matches before reinterpreting the buffer as a T*, and visit() can use if constexpr across the type pack to find and invoke the callable on whichever type is active."],
  bullets:[
-  "Write two empty mixin templates, Loggable<T> (adding a log(msg) method) and Comparable<T> (adding a sameAs(other) method that compares via a key() method T must provide), each using CRTP to call into T.",
-  "Write an Order class inheriting from both Loggable<Order> and Comparable<Order>, providing key().",
-  "Confirm sizeof(Order) is no larger than it would be with zero mixin bases — i.e. the mixins added no storage.",
-  "Separately, define an Empty class and compare sizeof of a class that inherits from Empty (EBO applies) against a class that instead holds an Empty as a data member (EBO does not apply to members) — explain the size difference you observe."
+  "Build a minimal tagged-union type parameterized on a pack of alternative types, constructible from any value whose type is in that pack, with the allowed types enforced via a concept or requires clause.",
+  "Give it a way to retrieve the currently active value by its type, asserting the active type actually matches.",
+  "Give it a visit method that dispatches to a callable based on which alternative is active, using if constexpr over the pack.",
+  "Implement the underlying storage manually: a raw byte buffer sized for the largest alternative, using placement new to construct into it and explicit destructor calls to tear down."
  ],
- validates:["CRTP mixins","Empty Base Optimization","empty-base vs. empty-member sizing"],
- driver:`int main(){\n  Order o1(42), o2(42), o3(7);\n  o1.log("created order");\n  std::cout << std::boolalpha << o1.sameAs(o2) << " " << o1.sameAs(o3) << "\\n";\n  std::cout << sizeof(Empty) << " " << sizeof(WithBaseEBO) << " " << sizeof(WithMember) << "\\n";\n}`,
- expected:"[LOG] created order\ntrue false\n1 4 8",
- solution:`template <typename T>\nclass Loggable {\npublic:\n    void log(const std::string& msg) const {\n        std::cout << "[LOG] " << msg << "\\n";\n    }\n};\n\ntemplate <typename T>\nclass Comparable {\npublic:\n    bool sameAs(const T& other) const {\n        return static_cast<const T*>(this)->key() == other.key();\n    }\n};\n\nclass Order : public Loggable<Order>, public Comparable<Order> {\npublic:\n    explicit Order(int id) : id_(id) {}\n    int key() const { return id_; }\nprivate:\n    int id_;\n};\n\nclass Empty {};\n\n// EBO applies: Empty as a base can share Order's address, adding 0 bytes.\nclass WithBaseEBO : public Empty {\n    int value;\n};\n\n// EBO does not apply to data members: Empty needs its own address here,\n// so it costs a byte (plus padding to align the following int).\nclass WithMember {\n    Empty e;\n    int value;\n};`},
+ validates:["variadics","if constexpr","concepts","object lifetime"],
+ driver:`int main(){\n  MyVariant<int,double,std::string> v{42};\n  std::cout << v.get<int>() << "\\n";\n\n  v = MyVariant<int,double,std::string>{std::string("hi")};\n  std::cout << v.get<std::string>() << "\\n";\n\n  v.visit([](auto&& val){ std::cout << "visited: " << val << "\\n"; });\n}`,
+ expected:"42\nhi\nvisited: hi",
+ solution:`#include <cstddef>
+#include <type_traits>
+#include <cassert>
 
-{id:17, part:"idioms", std:"C++20",
- title:"Operator overloading + the spaceship operator",
- primer:"Operator overloading lets a user-defined type support familiar syntax like + and <; C++20's defaulted operator<=> can generate all six relational and equality comparisons from a single declaration.",
- includes:["iostream","vector","algorithm","compare"],
- hints:["operator<=> defaulted (= default) generates all six relational operators (<, <=, >, >=, ==, !=) at once, comparing members in declaration order — for a single-member class like this it's a one-liner.","operator+= should do the real work and return *this by reference; operator+ can then be implemented in terms of it (make a copy, += it, return the copy) to avoid duplicating logic.","Once <=> is defaulted, ordinary algorithms like std::sort just work on a std::vector of your type with no extra comparator needed."],
- bullets:[
-  "Write a Money class storing an integer cent count internally, with operator+ and operator+= for combining amounts.",
-  "Default operator<=> to get all relational and equality comparisons for free, comparing by cent count.",
-  "Add a friend operator<< that prints the amount formatted as dollars.cents.",
-  "Confirm you can std::sort a std::vector<Money> with no custom comparator, purely from the defaulted spaceship operator."
- ],
- validates:["operator overloading","defaulted operator<=>","free comparisons + std::sort"],
- driver:`int main(){\n  Money a(1050), b(275);\n  std::cout << (a + b) << "\\n";\n  a += b;\n  std::cout << a << "\\n";\n  std::cout << std::boolalpha << (Money(500) < Money(600)) << " " << (Money(500) == Money(500)) << "\\n";\n  std::vector<Money> ms{Money(300), Money(100), Money(200)};\n  std::sort(ms.begin(), ms.end());\n  for (const auto& m : ms) std::cout << m << " ";\n  std::cout << "\\n";\n}`,
- expected:"13.25\n13.25\ntrue true\n1.00 2.00 3.00 ",
- solution:`class Money {\npublic:\n    explicit Money(int cents) : cents_(cents) {}\n\n    Money& operator+=(const Money& other) {\n        cents_ += other.cents_;\n        return *this;\n    }\n    friend Money operator+(Money lhs, const Money& rhs) {\n        lhs += rhs;\n        return lhs;\n    }\n\n    // Defaulting <=> alone is enough to get <, <=, >, >=, ==, and != for free.\n    auto operator<=>(const Money&) const = default;\n\n    friend std::ostream& operator<<(std::ostream& os, const Money& m) {\n        int whole = m.cents_ / 100;\n        int frac = m.cents_ % 100;\n        if (frac < 0) frac = -frac;\n        os << whole << "." << (frac < 10 ? "0" : "") << frac;\n        return os;\n    }\n\nprivate:\n    int cents_;\n};`},
+// index of T within the pack Ts... (compile-time)
+template<typename T, typename... Ts>
+struct IndexOf;
 
-{id:18, part:"idioms", std:"pre-11",
- title:"Friend classes + a nested iterator class for encapsulation",
- primer:"friend grants one specific class or function access to your private members without making them public; a nested class can serve as a private implementation detail — like a custom iterator — that only its owning class needs to expose.",
- includes:["iostream","vector"],
- hints:["friend class PortfolioAuditor; grants that one specific class full access to Portfolio's private members, without opening access to everyone — a narrower escape hatch than making the members public.","A nested Iterator class can hold a pointer back to its owning Portfolio plus an index, and stays a genuinely private implementation detail if you don't expose its internals — only operator*, operator++, and operator!= need to be public.","Providing begin()/end() returning your nested Iterator type is exactly what makes range-based for loops (for (double v : portfolio)) work, with zero library dependency."],
- bullets:[
-  "Write a Portfolio class holding a private std::vector<double> of positions, with an add(v) method.",
-  "Declare a separate PortfolioAuditor class as a friend of Portfolio, and give it a static total(const Portfolio&) method that sums positions by reaching directly into Portfolio's private data.",
-  "Write a nested Portfolio::Iterator class (holding a pointer to the Portfolio and an index) supporting operator*, operator++, and operator!=, and add begin()/end() methods to Portfolio returning it.",
-  "Confirm a range-based for loop over a Portfolio works using your nested iterator, and that PortfolioAuditor can compute the total via friendship without any public getter existing."
- ],
- validates:["friend classes","nested classes","custom iterators for range-based for"],
- driver:`int main(){\n  Portfolio p;\n  p.add(100.0); p.add(250.5); p.add(-30.5);\n  for (double v : p) std::cout << v << " ";\n  std::cout << "\\n";\n  std::cout << PortfolioAuditor::total(p) << "\\n";\n}`,
- expected:"100 250.5 -30.5 \n320",
- solution:`class Portfolio {\npublic:\n    friend class PortfolioAuditor;\n\n    void add(double v) { positions_.push_back(v); }\n\n    class Iterator {\n    public:\n        Iterator(const Portfolio* p, size_t idx) : p_(p), idx_(idx) {}\n        double operator*() const { return p_->positions_[idx_]; }\n        Iterator& operator++() { ++idx_; return *this; }\n        bool operator!=(const Iterator& other) const { return idx_ != other.idx_; }\n    private:\n        const Portfolio* p_;\n        size_t idx_;\n    };\n\n    Iterator begin() const { return Iterator(this, 0); }\n    Iterator end() const { return Iterator(this, positions_.size()); }\n\nprivate:\n    std::vector<double> positions_;\n};\n\nclass PortfolioAuditor {\npublic:\n    static double total(const Portfolio& p) {\n        double sum = 0.0;\n        for (double v : p.positions_) sum += v; // reaches private data via friendship\n        return sum;\n    }\n};`},
+template<typename T, typename... Rest>
+struct IndexOf<T, T, Rest...> : std::integral_constant<size_t, 0> {};
 
-{id:19, part:"quantperf", std:"C++11",
- title:"Struct padding, member ordering, and alignas",
- primer:"The compiler inserts padding between struct members so each one lands at an address matching its alignment requirement, meaning the same fields declared in a different order can produce a smaller (or larger) struct.",
- includes:["iostream","cstddef"],
- hints:["The compiler inserts padding bytes between members so that each one sits at an address matching its natural alignment (an 8-byte double needs an 8-byte-aligned address) — offsetof from <cstddef> lets you see exactly where each member landed.","Simply reordering members from largest-alignment to smallest-alignment (double before int before char) is usually enough to eliminate most internal padding, without changing anything about how the struct is used.","alignas(N) forces a type's alignment (and therefore often its size, rounded up) to at least N — useful for aligning hot data to cache-line boundaries (commonly 64 bytes) to avoid false sharing between cores, though the example here uses a smaller alignment to keep the numbers easy to read."],
- bullets:[
-  "Define TickBad as a struct with members in the order char flag, double price, int qty, and print sizeof(TickBad) plus each member's offsetof.",
-  "Define TickGood with the same three members reordered as double price, int qty, char flag, and compare its sizeof and offsets against TickBad.",
-  "Explain in a comment exactly where the padding bytes went in TickBad, in terms of double's 8-byte alignment requirement.",
-  "Define a third struct, TickAligned, holding just a double and an int but declared alignas(16), and confirm sizeof and alignof both reflect the forced alignment."
- ],
- validates:["struct padding","member reordering","alignas / alignof","offsetof"],
- driver:`int main(){\n  std::cout << sizeof(TickBad) << "\\n";\n  std::cout << offsetof(TickBad, flag) << " " << offsetof(TickBad, price) << " " << offsetof(TickBad, qty) << "\\n";\n  std::cout << sizeof(TickGood) << "\\n";\n  std::cout << offsetof(TickGood, price) << " " << offsetof(TickGood, qty) << " " << offsetof(TickGood, flag) << "\\n";\n  std::cout << sizeof(TickAligned) << " " << alignof(TickAligned) << "\\n";\n}`,
- expected:"24\n0 8 16\n16\n0 8 12\n16 16",
- solution:`struct TickBad {\n    char flag;    // offset 0, 1 byte\n    double price; // needs 8-byte alignment -> 7 bytes padding, then offset 8\n    int qty;      // offset 16\n};\n// sizeof(TickBad) == 24: 1 (flag) + 7 (padding) + 8 (price) + 4 (qty)\n// + 4 trailing padding, rounded up to a multiple of double's 8-byte align.\n\nstruct TickGood {\n    double price; // offset 0\n    int qty;      // offset 8\n    char flag;    // offset 12\n};\n// sizeof(TickGood) == 16: 8 + 4 + 1 + 3 trailing padding (multiple of 8).\n// Ordering largest-alignment-first to smallest eliminates the internal gaps.\n\nstruct alignas(16) TickAligned {\n    double price;\n    int qty;\n};\n// alignas(16) forces alignof == 16 and rounds sizeof up to a multiple of 16.`},
+template<typename T, typename Head, typename... Rest>
+struct IndexOf<T, Head, Rest...>
+    : std::integral_constant<size_t, 1 + IndexOf<T, Rest...>::value> {};
 
-{id:20, part:"quantperf", std:"pre-11",
- title:"Array-of-Structs vs. Struct-of-Arrays object design",
- primer:"Array-of-Structs stores each record's fields together in memory; Struct-of-Arrays stores each field contiguously across all records instead — a layout decision about cache efficiency that doesn't change what's computed, only how efficiently it's read.",
- includes:["iostream","vector"],
- hints:["Array-of-Structs (a std::vector<TickAoS>) stores each tick's fields contiguously, so touching just the price field of every tick still pulls the unrelated volume field into cache alongside it.","Struct-of-Arrays (separate std::vector<double> prices; std::vector<long> volumes;) stores each field contiguously across all ticks instead — a loop that only touches prices streams through cache lines with no wasted volume data mixed in.","Both layouts should compute identical results for the same logical data — SoA vs. AoS is purely a memory-layout decision, not a change in what's being computed; the real payoff (fewer cache misses over large datasets) shows up in timing, not in the answer's correctness."],
- bullets:[
-  "Define TickAoS as a struct of {double price; long volume;}, and a free function vwapAoS computing the volume-weighted average price over a std::vector<TickAoS>.",
-  "Define a TickBookSoA class holding parallel std::vector<double> and std::vector<long> members, with an add(price, volume) method and its own vwap() computing the same quantity.",
-  "Feed both representations the same tick data and confirm they produce identical VWAP results.",
-  "Explain, in terms of cache-line utilization, why a hot loop that only reads price (e.g. computing a moving average) would touch fewer cache lines against the SoA layout than the AoS layout as tick count grows large."
- ],
- validates:["AoS vs SoA","cache-conscious object design","data-oriented layout"],
- driver:`int main(){\n  std::vector<TickAoS> aos{{101.5, 100}, {101.75, 200}, {101.25, 150}};\n  TickBookSoA soa;\n  soa.add(101.5, 100); soa.add(101.75, 200); soa.add(101.25, 150);\n  std::cout << vwapAoS(aos) << "\\n";\n  std::cout << soa.vwap() << "\\n";\n  std::cout << sizeof(TickAoS) * aos.size() << "\\n";\n  std::cout << soa.count() << "\\n";\n}`,
- expected:"101.528\n101.528\n48\n3",
- solution:`struct TickAoS {\n    double price;\n    long volume;\n};\n\ndouble vwapAoS(const std::vector<TickAoS>& ticks) {\n    double weightedSum = 0.0;\n    long totalVolume = 0;\n    for (const auto& t : ticks) {\n        weightedSum += t.price * t.volume;\n        totalVolume += t.volume;\n    }\n    return weightedSum / totalVolume;\n}\n\nclass TickBookSoA {\npublic:\n    void add(double price, long volume) {\n        prices_.push_back(price);\n        volumes_.push_back(volume);\n    }\n\n    double vwap() const {\n        double weightedSum = 0.0;\n        long totalVolume = 0;\n        for (size_t i = 0; i < prices_.size(); ++i) {\n            weightedSum += prices_[i] * volumes_[i];\n            totalVolume += volumes_[i];\n        }\n        return weightedSum / totalVolume;\n    }\n\n    size_t count() const { return prices_.size(); }\n\nprivate:\n    std::vector<double> prices_;\n    std::vector<long> volumes_;\n};\n\n// A loop that only reads price touches every field of every TickAoS anyway\n// (fewer ticks per cache line), whereas the SoA prices_ vector packs only\n// prices contiguously -- more useful values per cache line as tick count grows.`},
+template<typename... Ts>
+class MyVariant {
+public:
+    template<typename T>
+    MyVariant(T value) {
+        static_assert((std::is_same_v<T, Ts> || ...), "T not in alternatives");
+        construct<T>(std::move(value));
+    }
 
-{id:21, part:"quantperf", std:"C++11",
- title:"A fixed-size object pool with placement new",
- primer:"Placement new constructs an object at an already-allocated memory address instead of allocating fresh storage, letting a pool hand out and reuse fixed slots without touching the heap allocator on every request.",
- includes:["iostream","utility"],
- hints:["A pool pre-allocates one contiguous, correctly-aligned raw byte buffer (alignas(T) unsigned char storage[N * sizeof(T)]) up front, and hands out slots from it — no heap allocation happens per-object at all.","acquire() uses placement new (new (mem) T(args...)) to construct an object *in* an already-allocated slot, and release() explicitly calls the destructor (obj->~T()) before returning the slot to the free list — construction and memory allocation are fully decoupled.","Because the free list is LIFO (a simple stack of free slots), releasing an object and immediately acquiring a new one reuses the exact same memory address — which is a good way to confirm your pool is really reusing slots rather than silently falling back to the heap."],
- bullets:[
-  "Write a fixed-capacity ObjectPool<T, N> template holding N slots of raw, correctly-aligned storage for T, plus a free list of available slot addresses.",
-  "Implement acquire(Args&&... args) using placement new to construct a T in a free slot (forwarding constructor arguments), returning nullptr if the pool is exhausted.",
-  "Implement release(T*) that explicitly calls the destructor and returns the slot to the free list.",
-  "Confirm that after acquiring an object, releasing it, and acquiring a new one, the new object's address is identical to the released one's — the pool is reusing memory rather than allocating fresh."
- ],
- validates:["placement new","manual destructor calls","object pooling for allocation-free hot paths"],
- driver:`int main(){\n  ObjectPool<Order,4> pool;\n  std::cout << pool.available() << "\\n";\n  Order* a = pool.acquire(1, 100.5);\n  Order* b = pool.acquire(2, 200.25);\n  std::cout << pool.available() << " " << a->id << " " << b->price << "\\n";\n  pool.release(a);\n  std::cout << pool.available() << "\\n";\n  Order* c = pool.acquire(3, 50.0);\n  std::cout << (c == a) << " " << c->id << "\\n";\n  pool.release(b);\n  pool.release(c);\n  std::cout << pool.available() << "\\n";\n}`,
- expected:"4\n2 1 200.25\n3\n1 3\n4",
- solution:`struct Order {\n    int id;\n    double price;\n    Order(int id, double price) : id(id), price(price) {}\n};\n\ntemplate <typename T, size_t N>\nclass ObjectPool {\npublic:\n    ObjectPool() {\n        for (size_t i = 0; i < N; ++i) freeList_.push_back(i);\n    }\n\n    template <typename... Args>\n    T* acquire(Args&&... args) {\n        if (freeList_.empty()) return nullptr;\n        size_t slot = freeList_.back();\n        freeList_.pop_back();\n        T* ptr = reinterpret_cast<T*>(&storage_[slot]);\n        new (ptr) T(std::forward<Args>(args)...); // placement new: construct in-place\n        return ptr;\n    }\n\n    void release(T* obj) {\n        obj->~T();      // manual destructor call\n        size_t slot = reinterpret_cast<Slot*>(obj) - storage_;\n        freeList_.push_back(slot);\n    }\n\n    size_t available() const { return freeList_.size(); }\n\nprivate:\n    using Slot = std::aligned_storage_t<sizeof(T), alignof(T)>;\n    Slot storage_[N];\n    std::vector<size_t> freeList_; // LIFO free list\n};`},
+    MyVariant(MyVariant&& other) noexcept { moveFrom<Ts...>(other); }
+    MyVariant& operator=(MyVariant&& other) noexcept {
+        destroy<Ts...>();
+        moveFrom<Ts...>(other);
+        return *this;
+    }
+    ~MyVariant() { destroy<Ts...>(); }
 
-{id:22, part:"quantperf", std:"pre-11",
- title:"Small Buffer / Small Object Optimization",
- primer:"A small-object-optimized type keeps a fixed-size inline buffer as a member and only falls back to a heap allocation once the payload exceeds that inline capacity — the same trick behind most std::string implementations' short-string handling.",
- includes:["iostream","cstring"],
- hints:["A small-buffer-optimized type keeps a fixed-size inline char array as a member and only reaches for the heap (a separate new[] allocation) once the payload exceeds that inline capacity — short values never touch the allocator at all.","data() needs to return whichever buffer is actually in use — the heap pointer if it's non-null, otherwise the inline array — and isSmall() is just a check of whether the heap pointer is null.","This is exactly the trick behind std::string's small-string optimization in every major standard library implementation: short strings (typically up to 15-22 bytes depending on the library) live entirely inside the string object with zero heap allocations."],
- bullets:[
-  "Write a SmallString class with a fixed inline char buffer (say 16 bytes) and a nullable heap char* pointer, both alongside a stored length.",
-  "In the constructor, copy the input into the inline buffer if it fits; otherwise allocate a heap buffer sized to the input and copy there instead.",
-  "Add data(), isSmall(), and size() accessors that correctly reflect which storage is actually in use, and a destructor that frees the heap buffer only if one was allocated.",
-  "Construct one short and one long string, confirm isSmall() correctly distinguishes them, and print sizeof(SmallString) to see the fixed per-object overhead this design pays even for tiny strings."
- ],
- validates:["small buffer optimization","inline storage vs. heap fallback","std::string SSO analog"],
- driver:`int main(){\n  SmallString ticker("AAPL");\n  SmallString longName("this-is-a-very-long-symbol-name-exceeding-inline-cap");\n  std::cout << std::boolalpha << ticker.isSmall() << " " << longName.isSmall() << "\\n";\n  std::cout << ticker.data() << "\\n";\n  std::cout << longName.data() << "\\n";\n  std::cout << ticker.size() << " " << longName.size() << "\\n";\n  std::cout << sizeof(SmallString) << "\\n";\n}`,
- expected:"true false\nAAPL\nthis-is-a-very-long-symbol-name-exceeding-inline-cap\n4 52\n32",
- solution:`class SmallString {\npublic:\n    explicit SmallString(const char* str) {\n        size_ = std::strlen(str);\n        if (size_ < sizeof(inline_)) {\n            std::memcpy(inline_, str, size_ + 1);\n            heap_ = nullptr;\n        } else {\n            heap_ = new char[size_ + 1];\n            std::memcpy(heap_, str, size_ + 1);\n        }\n    }\n\n    ~SmallString() { delete[] heap_; }\n\n    bool isSmall() const { return heap_ == nullptr; }\n    const char* data() const { return heap_ ? heap_ : inline_; }\n    size_t size() const { return size_; }\n\nprivate:\n    char inline_[16];\n    char* heap_ = nullptr;\n    size_t size_ = 0;\n};\n// sizeof(SmallString) == 32: 16 (inline buffer) + 8 (heap_ pointer)\n// + 8 (size_ as size_t) -- fixed per-object overhead paid even for "AAPL".`},
+    template<typename T>
+    T& get() {
+        assert(activeIndex == IndexOf<T, Ts...>::value && "wrong active type");
+        return *reinterpret_cast<T*>(&buffer);
+    }
+
+    template<typename F>
+    void visit(F&& f) { visitImpl<F, Ts...>(std::forward<F>(f)); }
+
+private:
+    alignas(Ts...) std::byte buffer[std::max({sizeof(Ts)...})];
+    size_t activeIndex = size_t(-1);
+
+    template<typename T>
+    void construct(T value) {
+        new (&buffer) T(std::move(value));
+        activeIndex = IndexOf<T, Ts...>::value;
+    }
+
+    template<typename Head, typename... Rest>
+    void destroy() {
+        if (activeIndex == IndexOf<Head, Ts...>::value) {
+            reinterpret_cast<Head*>(&buffer)->~Head();
+        } else if constexpr (sizeof...(Rest) > 0) {
+            destroy<Rest...>();
+        }
+    }
+
+    template<typename Head, typename... Rest>
+    void moveFrom(MyVariant& other) {
+        if (other.activeIndex == IndexOf<Head, Ts...>::value) {
+            new (&buffer) Head(std::move(*reinterpret_cast<Head*>(&other.buffer)));
+            activeIndex = IndexOf<Head, Ts...>::value;
+        } else if constexpr (sizeof...(Rest) > 0) {
+            moveFrom<Rest...>(other);
+        }
+    }
+
+    template<typename F, typename Head, typename... Rest>
+    void visitImpl(F&& f) {
+        if (activeIndex == IndexOf<Head, Ts...>::value) {
+            f(*reinterpret_cast<Head*>(&buffer));
+        } else if constexpr (sizeof...(Rest) > 0) {
+            visitImpl<F, Rest...>(std::forward<F>(f));
+        }
+    }
+};
+
+int main() {
+    MyVariant<int, double, std::string> v{42};
+    std::cout << v.get<int>() << "\\n";
+
+    v = MyVariant<int, double, std::string>{std::string("hi")};
+    std::cout << v.get<std::string>() << "\\n";
+
+    v.visit([](auto&& val){ std::cout << "visited: " << val << "\\n"; });
+}`},
+
 ];
 
 const CONCEPTS = [
 {id:1, std:"core",
- question:"For a class with several ordinary (non-virtual) member functions but no virtual functions, and a single int data member, what is sizeof(that class)?",
- answer:"The same as sizeof(int) — typically 4 bytes. Member functions aren't stored per-object at all; there's exactly one copy of each function's machine code shared by every instance, and the compiler passes a hidden 'this' argument to reach the right object's data. Adding more non-virtual member functions never changes an object's size."},
+ question:"Templates are often described as having zero runtime overhead. Does that mean writing more template code can never affect binary size or build time?",
+ answer:"No — the trade-off just moves elsewhere. The compiler doesn't generate any code for the template itself, but every distinct set of template arguments it's instantiated with produces its own separate compiled function or class ('template bloat'). More instantiations mean more code the linker has to keep, and re-parsing template definitions in every translation unit that includes them lengthens compile times, even though there's no per-call runtime dispatch overhead the way a virtual function has."},
 
 {id:2, std:"core",
- question:"Now add a single virtual function to that same class. What happens to sizeof(class), and why?",
- answer:"It grows by the size of one pointer — typically 8 bytes on a 64-bit target. The compiler adds a hidden vtable pointer ('vptr') to every instance, pointing at a single per-class table of function pointers used to resolve virtual calls at runtime. Adding a second, third, or tenth virtual function doesn't grow the object any further — there's still just one vptr, and the table it points to simply grows to hold more entries."},
+ question:"Why do template function and class definitions usually have to live entirely in header files, rather than split into a .h declaration and a .cpp definition the way ordinary functions are?",
+ answer:"A template isn't compiled into real code until it's instantiated with concrete types, and the compiler needs to see the full definition at the point of instantiation to generate that code. If the definition lived only in a separate .cpp file, other translation units that only include the header wouldn't have access to it when they try to instantiate the template, leading to linker errors. Explicit instantiation in one .cpp file — as in the extern template exercise — is the main workaround."},
 
 {id:3, std:"core",
- question:"If a class inherits from two base classes that each independently declare virtual functions, how many vptrs does an instance of the derived class typically carry?",
- answer:"Two — one per base subobject that introduces its own virtual function table (unless one base's vtable is reused because it's the primary base). This is part of why multiple inheritance with polymorphic bases can add more per-object overhead than single inheritance, and why pointer adjustments are sometimes needed when casting between base and derived pointers."},
+ question:"What is two-phase name lookup, and why does it matter for code inside a template that depends on a template parameter's type?",
+ answer:"The compiler processes a template body in two phases: once at definition time, resolving anything that doesn't depend on the template parameters, and again at instantiation time, resolving names that do depend on them. Because of this, a dependent name that refers to a type usually needs an explicit 'typename' keyword, and a dependent name that refers to a template needs the 'template' keyword, so the compiler knows how to parse the expression correctly before it even knows the concrete type involved."},
 
 {id:4, std:"core",
- question:"What actually happens if you call a virtual function from inside a base class's own constructor?",
- answer:"It resolves to the base class's own version of that function — never to an override defined in a more-derived class — even if the object being constructed is ultimately of a derived type. During the base constructor's execution, the derived part of the object hasn't been constructed yet and the object's vptr still points at the base class's vtable, so virtual dispatch behaves as if the object were only ever the base type. The same applies symmetrically to destructors."},
+ question:"What is SFINAE, spelled out, and what real problem does it solve?",
+ answer:"SFINAE stands for 'Substitution Failure Is Not An Error.' When the compiler substitutes a candidate template's parameters during overload resolution and that substitution produces an invalid type or expression, the compiler silently discards that candidate from the overload set instead of raising a hard error, as long as at least one candidate remains valid. It's the classic pre-concepts mechanism for writing templates that behave differently — or aren't considered at all — depending on which operations a type supports."},
 
 {id:5, std:"core",
- question:"Do default arguments on a virtual function participate in dynamic (runtime) dispatch, or static (compile-time) binding?",
- answer:"Default arguments are resolved statically, based on the static type of the expression used to make the call — not the function actually invoked at runtime. Calling a virtual function through a base-class pointer uses the base class's default argument values even if the call dispatches to a derived class's override with different declared defaults — a classic gotcha if an override changes its defaults."},
+ question:"Can a member function template be declared virtual?",
+ answer:"No. Virtual dispatch requires the compiler to build a fixed-size vtable listing every virtual function at compile time, but a function template can be instantiated with an open-ended set of type arguments — there's no way to know the complete set of instantiations in advance, so the two features are fundamentally incompatible."},
 
 {id:6, std:"core",
- question:"Is sizeof(SomeEmptyClass) ever 0 in C++?",
- answer:"No. Every complete object type has a size of at least 1 byte, even a class with no data members and no virtual functions, specifically so that two distinct objects are guaranteed to have distinct addresses. This is also exactly why the Empty Base Optimization matters — as a base class, that same empty type can still add zero bytes to a derived object, since it doesn't need its own distinct address there."},
+ question:"Are Foo&lt;int&gt; and Foo&lt;double&gt; the same type, the same class, or something else entirely?",
+ answer:"They're two distinct, unrelated types that happen to share the same template as their blueprint. Foo&lt;int&gt; and Foo&lt;double&gt; have no implicit conversion between them and no shared base-class relationship, and the compiler generates entirely separate code for each — they only look related because of the shared source text."},
 
 {id:7, std:"core",
- question:"Why does a purely abstract base class — one whose only member is a pure virtual destructor — still need that destructor defined somewhere?",
- answer:"A derived class's destructor always calls its base class's destructor as part of normal teardown, regardless of whether the base destructor is pure virtual — 'pure virtual' only means the base can't be instantiated directly; it doesn't exempt the destructor from needing an actual implementation to run during that teardown chain. Declaring it pure virtual without also defining it causes a linker error the first time a derived class is destroyed."},
+ question:"Does the compiler check the body of an uninstantiated template function for correctness before it's ever used?",
+ answer:"Only partially. Non-dependent code — anything not relying on the template parameters — is checked at the point the template is defined, the same as ordinary code. Dependent code, whose meaning depends on what the template parameters turn out to be, is only fully checked once the template is actually instantiated with concrete types, which is why some template bugs only surface the first time a particular instantiation is used."},
 
 {id:8, std:"core",
- question:"What's the actual machine-level cost of a virtual function call versus an ordinary (non-virtual) call?",
- answer:"A non-virtual call is typically a direct call to a fixed address, which the compiler can often inline. A virtual call instead requires an extra memory load through the object's vptr to find the class's vtable, then an indirect call through a function pointer at a computed offset in that table — meaningfully more work, and something the compiler generally cannot inline across since the target isn't known until runtime. In tight, hot loops this indirection is exactly why performance-sensitive code sometimes reaches for CRTP-style static polymorphism instead."},
+ question:"What's the practical difference between explicit template specialization and simply overloading a function of the same name?",
+ answer:"Specialization gives a different implementation for the same interface at a specific argument, and for function templates is bound tightly to whichever primary template it 'belongs to' — the compiler picks the best-matching primary template first during overload resolution, and only then considers whether a specialization exists for it. An ordinary overload instead participates directly and independently in overload resolution alongside every other candidate. Mixing specialization with a separate non-template overload of the same name is a common source of surprising results in real code."},
 
-{id:9, std:"core",
- question:"Does the compiler always generate a default constructor, copy constructor, copy-assignment operator, and destructor for a class, no matter what you declare yourself?",
- answer:"No — declaring almost any special member function suppresses at least some of the others. Declaring any constructor (even a non-default one) suppresses the implicitly-generated default constructor. Declaring a destructor, a copy constructor, or a copy-assignment operator suppresses the implicitly-generated move constructor and move assignment operator entirely, falling back to copy semantics if copy operations are still available — precisely the gotcha the Rule of Three vs. Rule of Five drills are built around."},
+{id:9, std:"C++20",
+ question:"Do concepts change how a constrained template is compiled, or mainly how errors are reported?",
+ answer:"Mainly the latter. A concept-constrained template still gets instantiated and compiled the same way an unconstrained one would once a valid candidate is chosen; what concepts change is overload resolution and diagnostics — constraints are checked earlier and produce direct, readable failure messages ('type does not satisfy X') instead of the deep, often unreadable error traces you'd get from a SFINAE-based trick failing somewhere deep inside library internals."},
 
 {id:10, std:"core",
- question:"Between composition (holding another object as a data member) and inheriting from it, which one, if either, can take advantage of the Empty Base Optimization?",
- answer:"Only inheritance. An empty class held as a data member always needs its own distinct address, so it still consumes at least 1 byte of the containing object's storage — typically rounded up further by alignment. An empty class used as a base class, by contrast, is allowed to share the derived object's starting address and can add zero bytes overall, which is why the mixins exercise frames this as a base-vs-member distinction rather than an inheritance-vs-composition one."},
+ question:"If you never call a particular member function of an instantiated class template, does the compiler still instantiate and type-check that member function?",
+ answer:"No — unlike a function template, which is instantiated as a whole, an instantiated class template only implicitly instantiates the member functions that are actually used (called, or whose address is taken). Unused member functions are never generated or fully checked, which is why a class template can be instantiated with a type that wouldn't satisfy every member function, as long as the members that would fail are never called."},
 ];
 
 const state = {};
@@ -592,12 +1236,6 @@ function buildCard(ex){
     <ul class="hint-list">${ex.hints.map(h => `<li>${esc(h)}</li>`).join("")}</ul>
   ` : "";
 
-  const solutionHtml = ex.solution ? `
-    <h4>solution</h4>
-    <button class="reveal-toggle solution-toggle" type="button">reveal solution</button>
-    <pre class="solution-box"><code>${esc(ex.solution)}</code></pre>
-  ` : "";
-
   const body = document.createElement("div");
   body.className = "card-body";
   body.innerHTML = `
@@ -612,18 +1250,16 @@ function buildCard(ex){
     <pre><code>${esc(fullDriver(ex))}</code></pre>
     <h4>expected stdout</h4>
     <pre class="expected"><code>${esc(ex.expected)}</code></pre>
-    ${solutionHtml}
     ${noteHtml}
+    <button class="reveal-toggle solution-toggle" type="button">show solution</button>
+    <div class="answer-box solution-box"><pre><code>${esc(ex.solution)}</code></pre></div>
   `;
-
-  const solutionBtn = body.querySelector(".solution-toggle");
-  if (solutionBtn) {
-    solutionBtn.addEventListener("click", () => {
-      const box = solutionBtn.nextElementSibling;
-      const showing = box.classList.toggle("shown");
-      solutionBtn.textContent = showing ? "hide solution" : "reveal solution";
-    });
-  }
+  body.querySelector(".solution-toggle").addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    const box = btn.nextElementSibling;
+    const showing = box.classList.toggle("shown");
+    btn.textContent = showing ? "hide solution" : "show solution";
+  });
 
   details.appendChild(summary);
   details.appendChild(body);
@@ -657,7 +1293,7 @@ function buildConceptCard(c){
   body.className = "card-body";
   body.innerHTML = `
     <button class="reveal-toggle" type="button">reveal answer</button>
-    <div class="answer-box">${esc(c.answer)}</div>
+    <div class="answer-box">${c.answer}</div>
   `;
   body.querySelector(".reveal-toggle").addEventListener("click", (e) => {
     const btn = e.currentTarget;

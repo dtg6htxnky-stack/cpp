@@ -2,29 +2,36 @@
 #include <initializer_list>
 #include <iostream>
 
-template<typename T, size_t ARRAY_SIZE>
-class FixedVector 
-{
-    private:
-    T values[ARRAY_SIZE];
-
-    public:
-
-    T& operator[](size_t index)
-    {
-        return values[index];
+template<typename T, size_t SIZE>
+class FixedVector {
+public:
+    FixedVector() = default;
+    FixedVector(std::initializer_list<T> list) {
+        int index = 0;
+        for (T e : list) {
+            buffer_[index++] = e;
+        }
     }
 
-    const T& operator[](size_t index) const
-    {
-        return values[index];
+    const T& operator[](size_t index) const {
+        return buffer_[index];
     }
 
-    template<typename U>
-    FixedVector<U, ARRAY_SIZE> cast() const
-    {
-        return FixedVector<U, ARRAY_SIZE>{values};
+    T& operator[](size_t index) {
+        return buffer_[index];
     }
+
+    template<typename Y>
+    FixedVector<Y, SIZE> cast(void) const {
+        FixedVector<Y, SIZE> result;
+        for (size_t i = 0; i < SIZE; ++i) {
+            result[i] = static_cast<Y>(buffer_[i]);
+        }
+        return result;
+    }
+
+private:
+    T buffer_[SIZE];
 };
 
 int main(){
