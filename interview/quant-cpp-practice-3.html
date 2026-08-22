@@ -1,0 +1,3106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ Quant Interview Practice</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #0c0d0f;
+    --bg-raised: #131417;
+    --line: #24262a;
+    --text: #e7e4dd;
+    --text-dim: #83837c;
+    --amber: #caa156;
+    --amber-dim: #6b5936;
+    --green: #7a9b76;
+    --red: #a86b60;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  body {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 20px 120px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ---------- header ---------- */
+
+  header {
+    margin-bottom: 36px;
+  }
+
+  .prompt {
+    color: var(--amber);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 6px 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  header p {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  /* ---------- stats row ---------- */
+
+  .meta-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .meta-row b { color: var(--text); font-weight: 500; }
+
+  /* ---------- category tabs ---------- */
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    margin: 28px 0 22px;
+    flex-wrap: wrap;
+  }
+
+  nav.tabs button {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+
+  nav.tabs button:hover { color: var(--text); border-color: #3a3d42; }
+
+  nav.tabs button.active {
+    color: var(--bg);
+    background: var(--amber);
+    border-color: var(--amber);
+  }
+
+  /* ---------- exercise list ---------- */
+
+  .exercise {
+    border-top: 1px solid var(--line);
+  }
+
+  .exercise:last-child { border-bottom: 1px solid var(--line); }
+
+  .ex-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 16px 2px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .ex-index {
+    color: var(--text-dim);
+    font-size: 12px;
+    width: 22px;
+    flex-shrink: 0;
+  }
+
+  .ex-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .ex-title .cat-tag {
+    color: var(--text-dim);
+    font-weight: 400;
+    font-size: 11px;
+    margin-left: 8px;
+  }
+
+  .ex-badges {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .std-badge {
+    font-size: 11px;
+    color: var(--amber);
+    border: 1px solid var(--amber-dim);
+    padding: 2px 6px;
+  }
+
+  .time-badge {
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  ul.followups {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-dim);
+    font-size: 13px;
+    max-width: 62ch;
+  }
+
+  ul.followups li {
+    margin-bottom: 8px;
+  }
+
+  ul.followups li::marker {
+    color: var(--amber);
+  }
+
+  .dots { font-size: 10px; letter-spacing: 2px; color: var(--amber); }
+  .dots .off { color: var(--line); }
+
+  .caret {
+    color: var(--text-dim);
+    font-size: 11px;
+    width: 12px;
+    text-align: center;
+  }
+
+  .ex-body {
+    display: none;
+    padding: 0 2px 26px 34px;
+  }
+
+  .exercise.open .ex-body { display: block; }
+  .exercise.open .caret { color: var(--amber); }
+
+  .ex-body .desc {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 16px;
+    max-width: 62ch;
+  }
+
+  .ex-body .desc b { color: var(--text); font-weight: 500; }
+
+  .block-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin: 18px 0 6px;
+  }
+
+  .code-wrap {
+    position: relative;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+  }
+
+  pre {
+    margin: 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: #d3d0c8;
+  }
+
+  code { font-family: inherit; }
+
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 4px 9px;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover { color: var(--text); border-color: #3a3d42; }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+  .solution-toggle {
+    margin-top: 18px;
+    background: none;
+    border: 1px dashed var(--line);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 8px 14px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+  }
+
+  .solution-toggle:hover { color: var(--amber); border-color: var(--amber-dim); }
+
+  .solution-wrap { display: none; margin-top: 12px; }
+  .solution-wrap.shown { display: block; }
+
+  footer {
+    margin-top: 50px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="prompt">~/quant-prep %</div>
+  <h1>C++ Quant Interview Practice</h1>
+  <p>Data structures, system design, and market/quant subject-matter exercises implemented in C++. Each one has a test runner you can drop into a file and compile, and a solution hidden until you want it.</p>
+  <div class="meta-row">
+    <span><b id="stat-total">0</b> exercises</span>
+    <span><b>4</b> categories</span>
+    <span><b>C++11&ndash;17</b> range</span>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs"></nav>
+
+<div id="list"></div>
+
+<footer>
+  compile with <code>g++ -std=c++17 -O2 -pthread file.cpp -o test &amp;&amp; ./test</code> &middot; swap the standard flag down for C++11/14-only exercises
+</footer>
+
+<script>
+const EXERCISES = [
+{
+  id: "price-levels",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "Order Book Price Levels",
+  difficulty: 1,
+  std: "C++11",
+  time: "15–20 min",
+  description: "Implement <b>PriceLevels</b>, which tracks total resting quantity at each price level on one side of an order book. <b>addQty</b> adds quantity at a price (creating the level if needed), <b>cancelQty</b> removes quantity from a level and deletes the level once it hits zero, and <b>best</b> reports the best price and its quantity (the highest price for bids, the lowest for asks &mdash; the class is instantiated once per side). Prices are passed as integer ticks, never as floating point. Add/cancel must run in O(log n) and best-price lookup in O(1).",
+  followups: [
+    "How would you also support O(1) lookup of total quantity at an arbitrary price level, not just the best?",
+    "How does this change if you also need to expose the top N levels (market depth), not just the best?",
+    "What if updates arrive far more often than reads — does the O(log n)/O(1) split still make sense?",
+    "Why not just key the map on a double price directly — what actually goes wrong?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <cstdint>
+
+// Price expressed as integer ticks to avoid floating point error
+class PriceLevels {
+public:
+    void addQty(int64_t priceTicks, int64_t qty);    // TODO
+    void cancelQty(int64_t priceTicks, int64_t qty);  // TODO
+    bool best(int64_t& priceTicks, int64_t& qty) const; // TODO: best = highest for bids
+};
+
+int main() {
+    PriceLevels empty;
+    int64_t p, q;
+    assert(!empty.best(p, q)); // empty book has no best
+
+    empty.cancelQty(10000, 50); // canceling on a nonexistent level is a no-op, not a crash
+    assert(!empty.best(p, q));
+
+    PriceLevels bids;
+    bids.addQty(10050, 100);
+    bids.addQty(10075, 50);
+    bids.addQty(10025, 200);
+
+    assert(bids.best(p, q) && p == 10075 && q == 50);
+
+    bids.cancelQty(10075, 50); // level empties, removed
+    assert(bids.best(p, q) && p == 10050 && q == 100);
+
+    bids.addQty(10050, 25); // re-adding at a canceled-out price starts fresh, doesn't resurrect old qty
+    assert(bids.best(p, q) && p == 10050 && q == 125);
+
+    bids.addQty(10100, 10); // new best appears above the current best
+    assert(bids.best(p, q) && p == 10100 && q == 10);
+
+    bids.cancelQty(10100, 5); // partial cancel leaves remaining qty, level survives
+    assert(bids.best(p, q) && p == 10100 && q == 5);
+
+    bids.cancelQty(9999, 1); // canceling a price that was never added is a no-op
+    assert(bids.best(p, q) && p == 10100 && q == 5);
+
+    bids.cancelQty(10100, 5); // fully cancel the new best; 10050 should resurface
+    assert(bids.best(p, q) && p == 10050 && q == 125);
+
+    bids.cancelQty(10050, 125);
+    bids.cancelQty(10025, 200);
+    assert(!bids.best(p, q)); // book fully drained is empty again, not stale
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <map>
+#include <functional>
+
+class PriceLevels {
+    // Bids: best = highest price, so sort descending.
+    // (For asks, use the default ascending std::map instead.)
+    std::map<int64_t, int64_t, std::greater<int64_t>> levels_;
+
+public:
+    void addQty(int64_t priceTicks, int64_t qty) {
+        levels_[priceTicks] += qty;
+    }
+
+    void cancelQty(int64_t priceTicks, int64_t qty) {
+        auto it = levels_.find(priceTicks);
+        if (it == levels_.end()) return;
+        it->second -= qty;
+        if (it->second <= 0) levels_.erase(it);
+    }
+
+    bool best(int64_t& priceTicks, int64_t& qty) const {
+        if (levels_.empty()) return false;
+        auto it = levels_.begin();
+        priceTicks = it->first;
+        qty = it->second;
+        return true;
+    }
+};`
+},
+{
+  id: "heap-matching",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "Priority Queue for Price-Time Priority",
+  difficulty: 1,
+  std: "C++11",
+  time: "10–15 min",
+  description: "Given the <b>Order</b> struct (price, an arrival sequence number, and quantity), write a comparator so that <b>std::priority_queue&lt;Order, std::vector&lt;Order&gt;, BidComparator&gt;</b> pops orders in strict price-time priority for the buy side: the highest price first, and when two orders share a price, the one with the lower (earlier) sequence number first.",
+  followups: [
+    "How would BidComparator differ for the ask side, and can you write one comparator that handles both?",
+    "std::priority_queue doesn't support decrease-key or removing an arbitrary element — how does that limit its use for a real order book, and what would you use instead?",
+    "How would you extend the ordering to a three-way tie-break (e.g. price, then order type, then time)?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <queue>
+#include <vector>
+#include <cstdint>
+
+struct Order {
+    int64_t price;
+    uint64_t seq; // arrival order, lower = earlier
+    int64_t qty;
+};
+
+// TODO: implement a comparator so std::priority_queue exposes the order
+// with the BEST price (highest) at top, and on a price tie, the order
+// with the EARLIEST arrival (lowest seq).
+struct BidComparator {
+    bool operator()(const Order& a, const Order& b) const;
+};
+
+int main() {
+    std::priority_queue<Order, std::vector<Order>, BidComparator> bids;
+    bids.push({10050, 1, 100});
+    bids.push({10075, 2, 50});
+    bids.push({10075, 0, 30}); // same price, earlier seq should win
+    bids.push({10025, 3, 200});
+
+    assert(bids.top().price == 10075 && bids.top().seq == 0);
+    bids.pop();
+    assert(bids.top().price == 10075 && bids.top().seq == 2);
+    bids.pop();
+    assert(bids.top().price == 10050 && bids.top().seq == 1);
+    bids.pop();
+    assert(bids.top().price == 10025 && bids.top().seq == 3);
+    bids.pop();
+    assert(bids.empty()); // fully drained, nothing left behind
+
+    // three orders tied at the same price: must pop in strict arrival order
+    std::priority_queue<Order, std::vector<Order>, BidComparator> tie;
+    tie.push({20000, 5, 1});
+    tie.push({20000, 2, 1});
+    tie.push({20000, 9, 1});
+    assert(tie.top().seq == 2);
+    tie.pop();
+    assert(tie.top().seq == 5);
+    tie.pop();
+    assert(tie.top().seq == 9);
+    tie.pop();
+    assert(tie.empty());
+
+    // a single-element queue must still report the right top and empty correctly
+    std::priority_queue<Order, std::vector<Order>, BidComparator> single;
+    single.push({15000, 0, 42});
+    assert(single.top().price == 15000);
+    single.pop();
+    assert(single.empty());
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `struct BidComparator {
+    // priority_queue puts the element this comparator calls "largest" at
+    // the top. We want the highest price to win, so a is "less than" b
+    // when a's price is lower. On a tie, the LOWER seq (earlier arrival)
+    // should win, so a is "less than" b when a's seq is HIGHER.
+    bool operator()(const Order& a, const Order& b) const {
+        if (a.price != b.price) return a.price < b.price;
+        return a.seq > b.seq;
+    }
+};`
+},
+{
+  id: "token-bucket",
+  category: "sys",
+  categoryLabel: "System Design",
+  title: "Token Bucket Rate Limiter",
+  difficulty: 1,
+  std: "C++11",
+  time: "15–20 min",
+  description: "Implement <b>TokenBucket</b>, which throttles a stream of requests (e.g. outbound order submissions) to at most <b>ratePerSec</b> requests per second on average, while allowing bursts of up to <b>burstCapacity</b> requests. <b>allow(now)</b> takes the current time as an explicit <b>steady_clock::time_point</b> parameter (it must not read the clock itself), returns whether the request is allowed at that instant, and consumes one unit of capacity if it is. Capacity regenerates continuously over time up to the burst limit, not in discrete per-second chunks.",
+  followups: [
+    "Why does the API take 'now' as a parameter instead of calling steady_clock::now() internally — what does that buy you?",
+    "How would you make this thread-safe for concurrent callers without serializing every allow() call?",
+    "How does a token bucket differ from a leaky bucket, and when would you pick one over the other for order throttling?",
+    "How would you support multiple rate limits at once (e.g. a per-second and a per-day cap) cleanly?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <chrono>
+
+class TokenBucket {
+public:
+    // ratePerSec tokens are added per second, up to burstCapacity.
+    TokenBucket(double ratePerSec, double burstCapacity); // TODO
+
+    // Returns true (and consumes a token) if a request is allowed 'now'.
+    bool allow(std::chrono::steady_clock::time_point now); // TODO
+};
+
+int main() {
+    using namespace std::chrono;
+    auto t0 = steady_clock::now();
+
+    TokenBucket bucket(10.0, 5.0); // 10 tokens/sec, burst of 5
+
+    int allowed = 0;
+    for (int i = 0; i < 5; ++i)
+        if (bucket.allow(t0)) ++allowed;
+    assert(allowed == 5); // burst fully consumed
+
+    assert(!bucket.allow(t0)); // no tokens left at the same instant
+
+    assert(bucket.allow(t0 + milliseconds(200))); // 0.2s * 10/s = 2 tokens regenerated
+    assert(bucket.allow(t0 + milliseconds(200)));
+    assert(!bucket.allow(t0 + milliseconds(200)));
+
+    // regeneration must cap at burstCapacity, not accumulate unboundedly
+    assert(bucket.allow(t0 + seconds(1000))); // huge idle gap, tokens should cap at 5
+    for (int i = 0; i < 4; ++i) assert(bucket.allow(t0 + seconds(1000)));
+    assert(!bucket.allow(t0 + seconds(1000))); // burst of 5 (1 + 4 above) now fully spent
+    assert(!bucket.allow(t0 + seconds(1000))); // still no tokens at the same instant
+
+    // partial-second regeneration must be fractional, not rounded down to 0
+    TokenBucket fine(100.0, 1.0); // 100 tokens/sec, burst of 1
+    auto t1 = steady_clock::now();
+    assert(fine.allow(t1));
+    assert(!fine.allow(t1 + microseconds(1))); // far too little time for a full token
+    assert(fine.allow(t1 + milliseconds(20))); // comfortably enough elapsed time to regenerate a token
+
+    // a bucket with burstCapacity 0 must never allow a request
+    TokenBucket zero(10.0, 0.0);
+    assert(!zero.allow(t1));
+    assert(!zero.allow(t1 + seconds(5)));
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <algorithm>
+#include <chrono>
+
+class TokenBucket {
+    double ratePerSec_;
+    double capacity_;
+    double tokens_;
+    std::chrono::steady_clock::time_point lastRefill_;
+    bool initialized_ = false;
+
+public:
+    TokenBucket(double ratePerSec, double burstCapacity)
+        : ratePerSec_(ratePerSec), capacity_(burstCapacity), tokens_(burstCapacity) {}
+
+    bool allow(std::chrono::steady_clock::time_point now) {
+        if (!initialized_) { lastRefill_ = now; initialized_ = true; }
+        double elapsed = std::chrono::duration<double>(now - lastRefill_).count();
+        tokens_ = std::min(capacity_, tokens_ + elapsed * ratePerSec_);
+        lastRefill_ = now;
+
+        if (tokens_ >= 1.0) {
+            tokens_ -= 1.0;
+            return true;
+        }
+        return false;
+    }
+};`
+},
+{
+  id: "ewma-vol",
+  category: "quant",
+  categoryLabel: "Quant Subject Matter",
+  title: "EWMA Volatility Estimator",
+  difficulty: 1,
+  std: "C++11",
+  time: "15–20 min",
+  description: "Implement <b>EwmaVolatility</b>, which maintains an exponentially weighted moving average of squared returns as an online variance estimate, given a decay factor <b>lambda</b> in (0, 1) (e.g. 0.94 for RiskMetrics-style daily data). <b>update(returnValue)</b> folds in one new return in O(1) time with no history retained; the very first call seeds the estimate with that observation's squared value rather than starting from zero. <b>variance()</b> returns the current estimate.",
+  followups: [
+    "How do you annualize this daily variance estimate, and what assumption does that rely on?",
+    "How does the choice of lambda trade off responsiveness to recent moves against noise, and how would you pick it empirically?",
+    "How does this compare to a GARCH(1,1) estimator, and when would the extra complexity of GARCH be worth it?",
+    "How would you detect and handle a bad/outlier return (e.g. a fat-fingered print) so it doesn't distort the estimate for a long time afterward?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <cmath>
+
+class EwmaVolatility {
+public:
+    explicit EwmaVolatility(double lambda); // TODO
+    void update(double returnValue);        // TODO
+    double variance() const;                // TODO
+};
+
+int main() {
+    EwmaVolatility ewma(0.94);
+    double returns[] = {0.01, -0.02, 0.015, 0.005, -0.01};
+    for (double r : returns) ewma.update(r);
+
+    // Seeded with the first observation's squared return, then decayed.
+    double expected = returns[0] * returns[0];
+    for (size_t i = 1; i < 5; ++i)
+        expected = 0.94 * expected + 0.06 * returns[i] * returns[i];
+
+    assert(std::abs(ewma.variance() - expected) < 1e-12);
+    assert(ewma.variance() >= 0.0); // variance can never be negative
+
+    // a single observation must seed variance to exactly its square, not zero
+    EwmaVolatility single(0.94);
+    single.update(0.03);
+    assert(std::abs(single.variance() - 0.0009) < 1e-12);
+
+    // an exact-zero return is a valid observation, not a no-op
+    EwmaVolatility withZero(0.9);
+    withZero.update(0.02);
+    withZero.update(0.0);
+    double expectedZero = 0.9 * (0.02 * 0.02) + 0.1 * 0.0;
+    assert(std::abs(withZero.variance() - expectedZero) < 1e-12);
+
+    // a different lambda must actually change the decay behavior
+    EwmaVolatility fastDecay(0.5);
+    double fastReturns[] = {0.04, 0.01, 0.02};
+    for (double r : fastReturns) fastDecay.update(r);
+    double expectedFast = fastReturns[0] * fastReturns[0];
+    for (size_t i = 1; i < 3; ++i)
+        expectedFast = 0.5 * expectedFast + 0.5 * fastReturns[i] * fastReturns[i];
+    assert(std::abs(fastDecay.variance() - expectedFast) < 1e-12);
+    assert(std::abs(fastDecay.variance() - ewma.variance()) > 1e-9); // different lambda, different estimate
+
+    std::cout << "PASS: variance=" << ewma.variance() << "\\n";
+    return 0;
+}`,
+  solution: `class EwmaVolatility {
+    double lambda_;
+    double var_ = 0.0;
+    bool initialized_ = false;
+
+public:
+    explicit EwmaVolatility(double lambda) : lambda_(lambda) {}
+
+    void update(double returnValue) {
+        if (!initialized_) {
+            var_ = returnValue * returnValue; // seed with the first observation
+            initialized_ = true;
+            return;
+        }
+        var_ = lambda_ * var_ + (1.0 - lambda_) * returnValue * returnValue;
+    }
+
+    double variance() const { return var_; }
+};
+
+// Follow-up: annualizing this (variance * 252 for daily data) and how
+// lambda trades off responsiveness vs. noise is a common next question.`
+},
+{
+  id: "spinlock",
+  category: "conc",
+  categoryLabel: "Concurrency",
+  title: "Spinlock from Scratch",
+  difficulty: 1,
+  std: "C++11",
+  time: "15–20 min",
+  description: "Implement <b>Spinlock</b>, a mutual-exclusion lock built only from <b>std::atomic_flag</b> &mdash; no <b>std::mutex</b> or other OS synchronization primitive is allowed. <b>lock()</b> must not return until exclusive ownership is acquired, and busy-waits rather than putting the thread to sleep. <b>unlock()</b> releases ownership. Concurrent increments to a shared counter guarded by lock()/unlock() from many threads must produce the exact expected total with no lost updates.",
+  followups: [
+    "What memory_order does each atomic operation actually need, and what could go wrong with the wrong choice?",
+    "When is a spinlock the wrong tool compared to std::mutex, and why?",
+    "How would you add exponential backoff or a pause instruction to reduce contention under many threads?",
+    "How would you make this fair (FIFO) so threads acquire the lock in the order they requested it?"
+  ],
+  runner: `#include <atomic>
+#include <thread>
+#include <vector>
+#include <iostream>
+#include <cassert>
+
+class Spinlock {
+public:
+    void lock();    // TODO
+    void unlock();  // TODO
+};
+
+int main() {
+    Spinlock lock;
+
+    // sequential reuse: the same lock instance must work across repeated cycles
+    for (int i = 0; i < 1000; ++i) {
+        lock.lock();
+        lock.unlock();
+    }
+
+    long counter = 0;
+    const int threads = 8, iters = 100000;
+
+    std::vector<std::thread> pool;
+    for (int t = 0; t < threads; ++t)
+        pool.emplace_back([&] {
+            for (int i = 0; i < iters; ++i) {
+                lock.lock();
+                ++counter; // unprotected ++ would race
+                lock.unlock();
+            }
+        });
+
+    for (auto& th : pool) th.join();
+    assert(counter == (long)threads * iters);
+
+    // guard a composite critical section (two values that must stay in lockstep)
+    // and a non-trivial operation (vector growth), which is far more likely to
+    // expose a broken lock than a single scalar increment.
+    Spinlock lock2;
+    long a = 0, b = 0;
+    std::vector<int> log;
+    std::vector<std::thread> pool2;
+    const int threads2 = 6, iters2 = 20000;
+    for (int t = 0; t < threads2; ++t)
+        pool2.emplace_back([&, t] {
+            for (int i = 0; i < iters2; ++i) {
+                lock2.lock();
+                ++a;
+                ++b;
+                log.push_back(t);
+                lock2.unlock();
+            }
+        });
+    for (auto& th : pool2) th.join();
+    assert(a == b); // both counters were always incremented together under the same lock
+    assert((long)log.size() == (long)threads2 * iters2); // no push_back was lost or corrupted
+    std::cout << "PASS: counter = " << counter << "\n";
+    return 0;
+}`,
+  solution: `#include <atomic>
+
+class Spinlock {
+    std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
+
+public:
+    void lock() {
+        while (flag_.test_and_set(std::memory_order_acquire)) {
+            // busy-wait; a real implementation backs off here
+            // (std::this_thread::yield() or a pause instruction)
+        }
+    }
+
+    void unlock() {
+        flag_.clear(std::memory_order_release);
+    }
+};
+
+// acquire on the successful test_and_set ensures everything the
+// previous unlock() released is visible before this thread enters
+// the critical section. release on unlock() publishes those writes.
+// Get this pairing wrong and the "lock" stops actually protecting
+// anything, even though the code compiles and usually looks fine.`
+},
+{
+  id: "call-once-singleton",
+  category: "conc",
+  categoryLabel: "Concurrency",
+  title: "Thread-Safe Lazy Initialization",
+  difficulty: 1,
+  std: "C++11",
+  time: "15–20 min",
+  description: "Implement <b>ExpensiveConfig::instance()</b> so that the (expensive-to-construct) singleton is created exactly once, no matter how many threads call <b>instance()</b> concurrently for the first time, with zero risk of double-construction, a torn/partial object being observed, or a data race on the pointer. Every caller, on every thread, must end up with a reference to the same object.",
+  followups: [
+    "Why is naive double-checked locking (check the pointer, lock, check again, construct) broken without extra care, even though it looks correct?",
+    "What guarantee does the C++11 standard actually make about function-local statics that makes the 'magic static' idiom safe?",
+    "How would you implement the same thing explicitly with std::call_once, and when would an interviewer want to see that instead of the magic-static form?",
+    "How would you support resetting or re-initializing the singleton for unit tests without reintroducing a race?"
+  ],
+  runner: `#include <atomic>
+#include <thread>
+#include <vector>
+#include <iostream>
+#include <cassert>
+
+class ExpensiveConfig {
+public:
+    static ExpensiveConfig& instance(); // TODO: thread-safe, initialized exactly once
+    int value = 0;
+private:
+    ExpensiveConfig() { value = 42; } // pretend this is expensive
+};
+
+int main() {
+    const int threads = 32;
+    std::vector<ExpensiveConfig*> results(threads);
+    std::vector<std::thread> pool;
+
+    for (int t = 0; t < threads; ++t)
+        pool.emplace_back([&, t] { results[t] = &ExpensiveConfig::instance(); });
+    for (auto& th : pool) th.join();
+
+    for (int t = 1; t < threads; ++t)
+        assert(results[t] == results[0]); // every thread gets the same instance, address included
+    assert(results[0]->value == 42);
+
+    // mutating the singleton must persist: later callers see the SAME object,
+    // not a freshly re-constructed one with the constructor's original value.
+    ExpensiveConfig::instance().value = 99;
+    assert(ExpensiveConfig::instance().value == 99);
+
+    // calling instance() many more times post-construction, including
+    // concurrently, must never allocate a second instance or reset the value.
+    std::vector<ExpensiveConfig*> laterResults(threads);
+    std::vector<std::thread> laterPool;
+    for (int t = 0; t < threads; ++t)
+        laterPool.emplace_back([&, t] { laterResults[t] = &ExpensiveConfig::instance(); });
+    for (auto& th : laterPool) th.join();
+
+    for (int t = 0; t < threads; ++t) {
+        assert(laterResults[t] == results[0]); // still the exact same object
+        assert(laterResults[t]->value == 99);  // still carrying the mutation
+    }
+
+    std::cout << "PASS\n";
+    return 0;
+}`,
+  solution: `class ExpensiveConfig {
+public:
+    static ExpensiveConfig& instance() {
+        static ExpensiveConfig instance_; // C++11: function-local static
+        return instance_;                  // init is guaranteed thread-safe
+    }
+    int value = 0;
+private:
+    ExpensiveConfig() { value = 42; }
+};
+
+// The "magic static" above is what most interviewers want to see.
+// If asked to make the mechanism explicit (e.g. lazily building a
+// heap-allocated object), use std::call_once instead:
+//
+//   #include <mutex>
+//   std::once_flag flag;
+//   ExpensiveConfig* ptr = nullptr;
+//   std::call_once(flag, [] { ptr = new ExpensiveConfig(); });`
+},
+{
+  id: "shared-mutex-cache",
+  category: "conc",
+  categoryLabel: "Concurrency",
+  title: "Reader-Writer Lock",
+  difficulty: 1,
+  std: "C++17",
+  time: "15–20 min",
+  description: "Implement <b>ConcurrentCache</b>, a key/value cache where any number of reader threads may read concurrently, but a writer must have exclusive access &mdash; no reader may observe a write in progress, and no two writers may run at the same time. <b>write(key, value)</b> inserts or updates a key; <b>read(key, out)</b> returns whether the key is present and, if so, writes its current value into <b>out</b>. Correctness must hold under many concurrent readers and writers hammering the same keys.",
+  followups: [
+    "When is a reader-writer lock actually a win over a plain mutex, and when does its overhead make it worse?",
+    "How would you avoid writer starvation if readers arrive continuously and never let the reader count reach zero?",
+    "How would this design change if writes were far more frequent than reads?",
+    "How would you shard this cache to reduce contention further under heavy concurrent load?"
+  ],
+  runner: `#include <shared_mutex>
+#include <thread>
+#include <vector>
+#include <atomic>
+#include <iostream>
+#include <cassert>
+#include <unordered_map>
+
+class ConcurrentCache {
+public:
+    void write(int key, int value); // TODO: exclusive access
+    bool read(int key, int& out);   // TODO: shared access, concurrent readers allowed
+};
+
+int main() {
+    ConcurrentCache cache;
+    const int keys = 100;
+
+    int missing;
+    assert(!cache.read(0, missing)); // reading a key before it's ever written must fail cleanly
+
+    std::vector<std::thread> writers;
+    for (int k = 0; k < keys; ++k)
+        writers.emplace_back([&, k] { cache.write(k, k * k); });
+    for (auto& t : writers) t.join();
+
+    std::atomic<int> matched{0};
+    std::vector<std::thread> readers;
+    for (int r = 0; r < 20; ++r)
+        readers.emplace_back([&] {
+            for (int k = 0; k < keys; ++k) {
+                int v;
+                if (cache.read(k, v) && v == k * k) ++matched;
+            }
+        });
+    for (auto& t : readers) t.join();
+
+    assert(matched.load() == 20 * keys);
+
+    // updating an existing key must overwrite, not duplicate or reject
+    cache.write(5, -1);
+    int updated;
+    assert(cache.read(5, updated) && updated == -1);
+
+    // interleaved concurrent writers (updates) and readers on the SAME keys:
+    // every read must observe some value that was legitimately written, never
+    // a torn/partial one, even while writes are actively in flight.
+    std::atomic<bool> stop{false};
+    std::atomic<int> sawValidValue{0};
+    std::vector<std::thread> mixed;
+    for (int w = 0; w < 4; ++w)
+        mixed.emplace_back([&, w] {
+            for (int i = 0; i < 2000; ++i) cache.write(w % keys, i);
+        });
+    for (int r = 0; r < 4; ++r)
+        mixed.emplace_back([&] {
+            while (!stop.load(std::memory_order_relaxed)) {
+                int v;
+                if (cache.read(0, v)) ++sawValidValue; // any completed write is a valid value
+            }
+        });
+    for (int w = 0; w < 4; ++w) mixed[w].join();
+    stop.store(true, std::memory_order_relaxed);
+    for (int r = 4; r < 8; ++r) mixed[r].join();
+    assert(sawValidValue.load() > 0); // readers actually made progress alongside writers
+
+    std::cout << "PASS: matched = " << matched.load() << "\n";
+    return 0;
+}`,
+  solution: `#include <shared_mutex>
+#include <unordered_map>
+
+class ConcurrentCache {
+    mutable std::shared_mutex mutex_;
+    std::unordered_map<int, int> data_;
+
+public:
+    void write(int key, int value) {
+        std::unique_lock lock(mutex_); // exclusive: blocks readers and writers
+        data_[key] = value;
+    }
+
+    bool read(int key, int& out) {
+        std::shared_lock lock(mutex_); // shared: many readers run concurrently
+        auto it = data_.find(key);
+        if (it == data_.end()) return false;
+        out = it->second;
+        return true;
+    }
+};`
+},
+{
+  id: "fixed-point-price",
+  category: "quant",
+  categoryLabel: "Quant Subject Matter",
+  title: "Fixed-Point Price Arithmetic",
+  difficulty: 1,
+  std: "C++11",
+  time: "15–20 min",
+  description: "Implement a <b>Price</b> type representing a monetary value to exactly 4 decimal places, backed internally by an <b>int64_t</b> count of 'ticks' (1 tick = 0.0001). Provide construction from a raw tick count, a <b>fromDouble</b> factory that rounds a double to the nearest tick, conversion back to a display double, and exact <b>+</b>, <b>&minus;</b>, and <b>==</b> operators. Arithmetic between two Price values built from decimal doubles that don't round-trip exactly in binary floating point (e.g. 10.1 and 0.2) must still produce exact results.",
+  followups: [
+    "Why can't 0.1 and 0.2 be represented exactly in binary floating point, and what actually goes wrong if you keep prices as raw doubles?",
+    "How would you extend Price to support multiplication by a quantity (computing notional value) without losing precision or overflowing int64_t?",
+    "How would you handle instruments with different tick sizes (e.g. 2 decimal places for equities, 5 for FX) in the same codebase?",
+    "What happens on overflow, and how would you guard against it?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <cstdint>
+
+// Represents a price with exactly 4 decimal digits of precision,
+// stored as an integer number of ticks (1 tick = 0.0001).
+class Price {
+public:
+    explicit Price(int64_t ticks);          // TODO
+    static Price fromDouble(double value);  // TODO: round to nearest tick
+    double toDouble() const;                // TODO
+    int64_t ticks() const;                  // TODO
+
+    Price operator+(const Price& other) const; // TODO
+    Price operator-(const Price& other) const; // TODO
+    bool operator==(const Price& other) const; // TODO
+};
+
+int main() {
+    Price a = Price::fromDouble(10.1);
+    Price b = Price::fromDouble(0.2);
+    Price sum = a + b;
+
+    assert(0.1 + 0.2 != 0.3); // the problem fixed-point arithmetic solves
+    assert(sum == Price::fromDouble(10.3)); // exact with fixed-point ticks
+    assert(sum.ticks() == 103000);
+
+    Price diff = sum - a;
+    assert(diff == b);
+
+    // the raw-tick constructor must be usable directly, not just via fromDouble
+    Price raw(12345);
+    assert(raw.ticks() == 12345);
+    assert(std::abs(raw.toDouble() - 1.2345) < 1e-9);
+
+    // negative prices must round-trip and arithmetic correctly, not just positive ones
+    Price neg = Price::fromDouble(-5.25);
+    assert(neg.ticks() == -52500);
+    Price negSum = neg + Price::fromDouble(1.00);
+    assert(negSum == Price::fromDouble(-4.25));
+
+    // subtraction producing a negative result must still be exact
+    Price small = Price::fromDouble(1.00);
+    Price large = Price::fromDouble(3.50);
+    Price negDiff = small - large;
+    assert(negDiff == Price::fromDouble(-2.50));
+    assert(negDiff.ticks() == -25000);
+
+    // fromDouble must round to the NEAREST tick, not truncate toward zero
+    assert(Price::fromDouble(1.00005).ticks() == 10001 || Price::fromDouble(1.00005).ticks() == 10000);
+    assert(Price::fromDouble(1.00004).ticks() == 10000); // rounds down, below the halfway point
+    assert(Price::fromDouble(1.00006).ticks() == 10001); // rounds up, above the halfway point
+
+    // exact zero must behave correctly on both sides of arithmetic
+    Price zero(0);
+    assert(a - a == zero);
+    assert(a + zero == a);
+
+    // two independently constructed but numerically equal prices must compare equal
+    assert(Price::fromDouble(7.77) == Price(77700));
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <cmath>
+
+class Price {
+    int64_t ticks_;
+    static constexpr int64_t kTicksPerUnit = 10000; // 4 decimal places
+
+public:
+    explicit Price(int64_t ticks) : ticks_(ticks) {}
+
+    static Price fromDouble(double value) {
+        return Price(static_cast<int64_t>(std::llround(value * kTicksPerUnit)));
+    }
+
+    double toDouble() const { return static_cast<double>(ticks_) / kTicksPerUnit; }
+    int64_t ticks() const { return ticks_; }
+
+    Price operator+(const Price& other) const { return Price(ticks_ + other.ticks_); }
+    Price operator-(const Price& other) const { return Price(ticks_ - other.ticks_); }
+    bool operator==(const Price& other) const { return ticks_ == other.ticks_; }
+};`
+},
+{
+  id: "lru-cache",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "LRU Cache, O(1) get/put",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–30 min",
+  description: "Design and implement a fixed-capacity key/value cache, <b>LRUCache&lt;K, V&gt;</b>, that evicts the least-recently-used entry when it's full. <b>get(key, outValue)</b> returns whether the key was present and, on a hit, counts as a 'use' of that entry. <b>put(key, value)</b> inserts or updates a key, counts as a use, and evicts the LRU entry first if the cache is already at capacity. Both operations must run in O(1) time, not O(log n) or O(capacity).",
+  followups: [
+    "How would you make this thread-safe without serializing every get() behind one lock?",
+    "How do you turn this into an LFU cache instead, and does O(1) still hold?",
+    "How would you add TTL-based expiry on top of this without breaking the O(1) bound?",
+    "What's the memory overhead per entry compared to a plain hash map, and does that matter here?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <string>
+
+template <typename K, typename V>
+class LRUCache {
+public:
+    explicit LRUCache(size_t capacity);
+    // TODO: implement
+    bool get(const K& key, V& outValue);
+    void put(const K& key, const V& value);
+};
+
+int main() {
+    LRUCache<int, std::string> cache(2);
+    std::string v;
+    assert(!cache.get(1, v)); // miss on an empty cache must not crash or false-positive
+
+    cache.put(1, "a");
+    cache.put(2, "b");
+    assert(cache.get(1, v) && v == "a"); // touches 1, order becomes: 2, 1
+    cache.put(3, "c"); // evicts 2 (least recently used)
+    assert(!cache.get(2, v));
+    assert(cache.get(3, v) && v == "c");
+    assert(cache.get(1, v) && v == "a");
+
+    // put() on an existing key must update its value AND count as a use
+    // (i.e. it must not be evicted next, even though it's not the newest key)
+    LRUCache<int, std::string> cache2(2);
+    cache2.put(1, "x");
+    cache2.put(2, "y");
+    cache2.put(1, "x-updated"); // order becomes: 2, 1 (1 refreshed)
+    cache2.put(3, "z");        // evicts 2, NOT 1
+    assert(!cache2.get(2, v));
+    assert(cache2.get(1, v) && v == "x-updated");
+    assert(cache2.get(3, v) && v == "z");
+
+    // capacity of 1: every put must evict the previous single entry
+    LRUCache<int, std::string> tiny(1);
+    tiny.put(10, "only");
+    assert(tiny.get(10, v) && v == "only");
+    tiny.put(20, "replacement");
+    assert(!tiny.get(10, v));
+    assert(tiny.get(20, v) && v == "replacement");
+
+    // a longer sequence exercising repeated eviction under churn
+    LRUCache<int, int> churn(3);
+    for (int i = 0; i < 10; ++i) churn.put(i, i * 10);
+    // only the last 3 keys inserted (7, 8, 9) should still be present
+    int out;
+    for (int i = 0; i < 7; ++i) assert(!churn.get(i, out));
+    for (int i = 7; i < 10; ++i) assert(churn.get(i, out) && out == i * 10);
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <list>
+#include <unordered_map>
+
+template <typename K, typename V>
+class LRUCache {
+    size_t capacity_;
+    std::list<std::pair<K, V>> items_; // front = most recently used
+    std::unordered_map<K, typename std::list<std::pair<K, V>>::iterator> index_;
+
+public:
+    explicit LRUCache(size_t capacity) : capacity_(capacity) {}
+
+    bool get(const K& key, V& outValue) {
+        auto it = index_.find(key);
+        if (it == index_.end()) return false;
+        items_.splice(items_.begin(), items_, it->second); // move to front, O(1)
+        outValue = it->second->second;
+        return true;
+    }
+
+    void put(const K& key, const V& value) {
+        auto it = index_.find(key);
+        if (it != index_.end()) {
+            it->second->second = value;
+            items_.splice(items_.begin(), items_, it->second);
+            return;
+        }
+        if (items_.size() >= capacity_) {
+            auto& lru = items_.back();
+            index_.erase(lru.first);
+            items_.pop_back();
+        }
+        items_.emplace_front(key, value);
+        index_[key] = items_.begin();
+    }
+};`
+},
+{
+  id: "memory-pool",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "Fixed-Block Memory Pool Allocator",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–30 min",
+  description: "Implement <b>OrderPool</b>, a fixed-capacity allocator for <b>Order</b> objects that avoids calling the general-purpose <b>new</b>/<b>malloc</b> on the hot path. The constructor pre-allocates storage for exactly <b>capacity</b> objects. <b>acquire()</b> hands back a pointer to a live, default-constructed <b>Order</b> or <b>nullptr</b> if the pool is exhausted; <b>release(Order*)</b> destroys that object and returns its storage to the pool for reuse. Repeated acquire/release calls must not grow the pool's memory footprint, and a slot freed by <b>release</b> must be eligible for reuse by a later <b>acquire</b>.",
+  followups: [
+    "Why can't you just use a std::vector<Order> with an index-based free list here — what does that get wrong?",
+    "How would you make acquire()/release() safe to call from multiple threads without serializing every call behind one lock?",
+    "What happens if a caller calls release() twice on the same pointer, or uses a pointer after releasing it — how would you guard against that in debug builds?",
+    "How would you extend this to variable-sized allocations (a general-purpose pool allocator)?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <cstdint>
+#include <cstddef>
+#include <set>
+
+struct Order {
+    int64_t id;
+    int64_t price;
+    int64_t qty;
+};
+
+class OrderPool {
+public:
+    explicit OrderPool(size_t capacity); // TODO
+    ~OrderPool();                        // TODO
+    Order* acquire();                    // TODO: hand out a free slot
+    void release(Order* o);              // TODO: return a slot to the free list
+};
+
+int main() {
+    OrderPool pool(4);
+    Order* a = pool.acquire();
+    Order* b = pool.acquire();
+    a->id = 1; b->id = 2;
+    pool.release(a);
+    Order* c = pool.acquire(); // should reuse a's slot (LIFO free list)
+    assert(c == a);
+    (void)b;
+
+    // exhaustion: acquiring more than capacity must fail cleanly, not
+    // crash or silently grow the pool's footprint.
+    OrderPool small(2);
+    Order* s1 = small.acquire();
+    Order* s2 = small.acquire();
+    assert(s1 != nullptr && s2 != nullptr);
+    assert(s1 != s2); // two live acquisitions must never alias the same storage
+    assert(small.acquire() == nullptr); // pool of 2 is now fully checked out
+
+    small.release(s1);
+    Order* s3 = small.acquire(); // exactly one slot freed, exactly one should be acquirable
+    assert(s3 != nullptr);
+    assert(small.acquire() == nullptr); // still exhausted, s2 and s3 are both live
+
+    // many acquire/release cycles must never exceed the pool's fixed capacity,
+    // and every returned pointer must fall within the pool's set of slots.
+    OrderPool cycling(3);
+    std::set<Order*> distinctAddresses;
+    for (int round = 0; round < 20; ++round) {
+        Order* x = cycling.acquire();
+        Order* y = cycling.acquire();
+        Order* z = cycling.acquire();
+        assert(x && y && z);
+        assert(cycling.acquire() == nullptr); // capacity 3, all checked out
+        distinctAddresses.insert(x);
+        distinctAddresses.insert(y);
+        distinctAddresses.insert(z);
+        cycling.release(x);
+        cycling.release(y);
+        cycling.release(z);
+    }
+    // no matter how many rounds of churn, the pool must keep reusing the
+    // same fixed set of at most 3 slots rather than growing.
+    assert(distinctAddresses.size() <= 3);
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <vector>
+#include <new>
+
+class OrderPool {
+    union Slot {
+        Order order;
+        Slot* next;
+        Slot() {}
+        ~Slot() {}
+    };
+
+    std::vector<Slot> storage_;
+    Slot* freeList_ = nullptr;
+
+public:
+    explicit OrderPool(size_t capacity) : storage_(capacity) {
+        for (size_t i = 0; i < capacity; ++i) {
+            storage_[i].next = freeList_;
+            freeList_ = &storage_[i];
+        }
+    }
+
+    ~OrderPool() = default;
+
+    Order* acquire() {
+        if (!freeList_) return nullptr; // pool exhausted
+        Slot* slot = freeList_;
+        freeList_ = freeList_->next;
+        return new (&slot->order) Order(); // placement new
+    }
+
+    void release(Order* o) {
+        Slot* slot = reinterpret_cast<Slot*>(o);
+        slot->next = freeList_;
+        freeList_ = slot;
+    }
+};`
+},
+{
+  id: "bounded-mpmc",
+  category: "sys",
+  categoryLabel: "System Design",
+  title: "Bounded Blocking MPMC Queue",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–30 min",
+  description: "Implement <b>BoundedQueue&lt;T&gt;</b>, a fixed-capacity thread-safe queue that any number of producer threads and any number of consumer threads can call concurrently. <b>push(item)</b> blocks the calling thread while the queue is full; <b>pop()</b> blocks the calling thread while the queue is empty. No items may be lost, duplicated, or reordered within a single producer's submissions. The implementation must not busy-wait.",
+  followups: [
+    "How would you add a try_push()/try_pop() that never blocks, alongside the blocking versions?",
+    "How would you make this lock-free instead, and what do you give up (ordering guarantees, simplicity) to get there?",
+    "How do you handle shutdown cleanly — waking up threads blocked in pop() so they can exit?",
+    "What's the effect of spurious wakeups on this implementation, and how is it handled?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <thread>
+#include <vector>
+#include <atomic>
+
+template <typename T>
+class BoundedQueue {
+public:
+    explicit BoundedQueue(size_t capacity); // TODO
+    void push(T item);                      // TODO: blocks while full
+    T pop();                                // TODO: blocks while empty
+};
+
+int main() {
+    // single producer / single consumer with a tiny capacity: this forces
+    // both push() and pop() to actually block and wake each other up
+    // repeatedly, and lets us check strict FIFO order (not just totals).
+    {
+        BoundedQueue<int> q(2);
+        const int n = 10000;
+        std::vector<int> received;
+        received.reserve(n);
+
+        std::thread producer([&] {
+            for (int i = 0; i < n; ++i) q.push(i);
+        });
+        std::thread consumer([&] {
+            for (int i = 0; i < n; ++i) received.push_back(q.pop());
+        });
+        producer.join();
+        consumer.join();
+
+        assert((int)received.size() == n);
+        for (int i = 0; i < n; ++i) assert(received[i] == i); // strict order, single producer
+    }
+
+    BoundedQueue<int> q(16);
+    const int itemsPerProducer = 5000;
+    const int producers = 4, consumers = 4;
+    std::atomic<long long> sum{0};
+    std::atomic<int> popped{0};
+
+    std::vector<std::thread> threads;
+    for (int p = 0; p < producers; ++p)
+        threads.emplace_back([&] {
+            for (int i = 0; i < itemsPerProducer; ++i) q.push(1);
+        });
+    for (int c = 0; c < consumers; ++c)
+        threads.emplace_back([&] {
+            for (int i = 0; i < (producers * itemsPerProducer) / consumers; ++i) {
+                sum += q.pop();
+                ++popped;
+            }
+        });
+
+    for (auto& t : threads) t.join();
+    assert(sum.load() == producers * itemsPerProducer);
+    assert(popped.load() == producers * itemsPerProducer); // every pushed item was popped exactly once
+
+    // capacity of 1: the tightest possible bound, exercises maximal blocking
+    BoundedQueue<int> tight(1);
+    std::atomic<int> tightSum{0};
+    std::thread tp([&] { for (int i = 0; i < 2000; ++i) tight.push(1); });
+    std::thread tc([&] { for (int i = 0; i < 2000; ++i) tightSum += tight.pop(); });
+    tp.join();
+    tc.join();
+    assert(tightSum.load() == 2000);
+
+    std::cout << "PASS: consumed " << popped.load() << " items\\n";
+    return 0;
+}`,
+  solution: `#include <mutex>
+#include <condition_variable>
+#include <queue>
+
+template <typename T>
+class BoundedQueue {
+    size_t capacity_;
+    std::queue<T> queue_;
+    std::mutex mutex_;
+    std::condition_variable notFull_;
+    std::condition_variable notEmpty_;
+
+public:
+    explicit BoundedQueue(size_t capacity) : capacity_(capacity) {}
+
+    void push(T item) {
+        std::unique_lock<std::mutex> lock(mutex_);
+        notFull_.wait(lock, [&] { return queue_.size() < capacity_; });
+        queue_.push(std::move(item));
+        lock.unlock();
+        notEmpty_.notify_one();
+    }
+
+    T pop() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        notEmpty_.wait(lock, [&] { return !queue_.empty(); });
+        T item = std::move(queue_.front());
+        queue_.pop();
+        lock.unlock();
+        notFull_.notify_one();
+        return item;
+    }
+};`
+},
+{
+  id: "gap-detector",
+  category: "sys",
+  categoryLabel: "System Design",
+  title: "Sequence Gap Detector for a Market Data Feed",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–30 min",
+  description: "Packets arrive over UDP multicast carrying a monotonically increasing sequence number, but UDP guarantees neither ordering nor delivery. Implement <b>GapDetector</b>, constructed with the first expected sequence number, whose <b>onPacket(pkt, onDeliver)</b> method is called once per received packet (which may arrive early, late, or duplicated). It must invoke <b>onDeliver</b> for each packet in strict sequence order, buffering any packet that arrives ahead of the next expected sequence number and flushing buffered packets once the gap that was blocking them is filled. It must silently ignore duplicates and already-delivered packets. Return whether the detector currently has anything buffered and is waiting on a missing sequence number.",
+  followups: [
+    "How would you bound the buffer so an attacker (or a badly out-of-order feed) can't make it grow unbounded?",
+    "How would you decide when to give up waiting on a gap and request a retransmission (or a full snapshot) instead of waiting forever?",
+    "How does this design change for a feed with multiple independent sequence streams (e.g. per-symbol channels)?",
+    "What's the time and space complexity of onPacket in the worst case, and when is that worst case hit?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <vector>
+#include <cstdint>
+#include <functional>
+
+struct Packet { uint64_t seq; int payload; };
+
+class GapDetector {
+public:
+    explicit GapDetector(uint64_t startSeq); // TODO
+    // Feed a (possibly out-of-order) packet. Calls onDeliver, in seq
+    // order, for every packet that becomes ready. Returns true if
+    // delivery is currently blocked on a missing sequence number.
+    bool onPacket(const Packet& pkt, const std::function<void(const Packet&)>& onDeliver); // TODO
+};
+
+int main() {
+    std::vector<int> delivered;
+    GapDetector det(1);
+
+    assert(!det.onPacket({1, 10}, [&](const Packet& p) { delivered.push_back(p.payload); }));
+    bool gap = det.onPacket({3, 30}, [&](const Packet& p) { delivered.push_back(p.payload); });
+    assert(gap); // seq 2 is missing, 3 gets buffered
+    assert((delivered == std::vector<int>{10}));
+
+    // a repeat of an already-buffered packet must not disrupt the eventual
+    // flush order once the gap is filled (use the same payload, since the
+    // spec only promises duplicates don't corrupt delivery, not which
+    // physical copy of a duplicate "wins")
+    gap = det.onPacket({3, 30}, [&](const Packet& p) { delivered.push_back(p.payload); });
+    assert(gap); // still waiting on 2
+    assert((delivered == std::vector<int>{10}));
+
+    // a duplicate of an already-delivered packet must be silently ignored
+    gap = det.onPacket({1, 999}, [&](const Packet& p) { delivered.push_back(p.payload); });
+    assert(gap);
+    assert((delivered == std::vector<int>{10})); // unchanged
+
+    gap = det.onPacket({2, 20}, [&](const Packet& p) { delivered.push_back(p.payload); });
+    assert(!gap); // gap filled: 2 and the buffered 3 both flush in order
+    assert((delivered == std::vector<int>{10, 20, 30}));
+
+    // once fully caught up, no gap should be reported
+    assert(!det.onPacket({4, 40}, [&](const Packet& p) { delivered.push_back(p.payload); }));
+    assert((delivered == std::vector<int>{10, 20, 30, 40}));
+
+    // a wider gap spanning several missing sequence numbers, filled out of order
+    std::vector<int> delivered2;
+    GapDetector det2(100);
+    auto sink2 = [&](const Packet& p) { delivered2.push_back(p.payload); };
+    assert(det2.onPacket({105, 5}, sink2)); // way ahead, buffered
+    assert(det2.onPacket({103, 3}, sink2)); // still ahead, buffered
+    assert(det2.onPacket({101, 1}, sink2)); // fills 101, but 102 still missing
+    assert((delivered2 == std::vector<int>{})); // nothing can flush yet: 100 itself hasn't arrived
+    assert(det2.onPacket({100, 0}, sink2)); // fills 100, flushes 100-101, then blocks on 102
+    assert((delivered2 == std::vector<int>{0, 1}));
+    assert(det2.onPacket({102, 2}, sink2)); // fills 102, cascades through 103, blocks on 104
+    assert((delivered2 == std::vector<int>{0, 1, 2, 3}));
+    assert(!det2.onPacket({104, 4}, sink2)); // final piece: everything flushes, no gap left
+    assert((delivered2 == std::vector<int>{0, 1, 2, 3, 4, 5}));
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <map>
+
+class GapDetector {
+    uint64_t nextExpected_;
+    std::map<uint64_t, Packet> pending_;
+
+public:
+    explicit GapDetector(uint64_t startSeq) : nextExpected_(startSeq) {}
+
+    bool onPacket(const Packet& pkt, const std::function<void(const Packet&)>& onDeliver) {
+        if (pkt.seq >= nextExpected_) {
+            pending_[pkt.seq] = pkt;
+            while (pending_.count(nextExpected_)) {
+                onDeliver(pending_[nextExpected_]);
+                pending_.erase(nextExpected_);
+                ++nextExpected_;
+            }
+        }
+        // else: duplicate or already-delivered packet, safe to ignore
+        return !pending_.empty();
+    }
+};`
+},
+{
+  id: "welford",
+  category: "quant",
+  categoryLabel: "Quant Subject Matter",
+  title: "Streaming Mean & Variance (Welford's Algorithm)",
+  difficulty: 2,
+  std: "C++11",
+  time: "20–25 min",
+  description: "Implement <b>RunningStats</b>, which computes the running mean and population variance of a stream of doubles (e.g. prices or returns) in a single pass, updating in O(1) time and O(1) space per observation &mdash; the full history may not be stored, and the naive two-pass formula <b>E[X&sup2;] &minus; E[X]&sup2;</b> is not numerically acceptable because it loses precision through catastrophic cancellation when the values are close together relative to their magnitude.",
+  followups: [
+    "Why exactly does E[X²] − E[X]² lose precision, and can you construct an input where it visibly breaks?",
+    "How would you extend this to compute a windowed (last N observations) mean and variance instead of the all-time running value?",
+    "How would you compute running skewness or kurtosis with the same one-pass, O(1)-space approach?",
+    "How would you merge two RunningStats objects computed on different data shards into one (parallel/distributed variance)?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <cmath>
+
+class RunningStats {
+public:
+    void update(double x);   // TODO
+    double mean() const;     // TODO
+    double variance() const; // TODO: population variance
+    long count() const;      // TODO
+};
+
+int main() {
+    RunningStats stats;
+    double data[] = {2.0, 4.0, 4.0, 4.0, 5.0, 5.0, 7.0, 9.0};
+    for (double x : data) stats.update(x);
+
+    assert(stats.count() == 8);
+    assert(std::abs(stats.mean() - 5.0) < 1e-9);
+    assert(std::abs(stats.variance() - 4.0) < 1e-9);
+
+    // a single observation has zero variance by definition
+    RunningStats single;
+    single.update(42.0);
+    assert(single.count() == 1);
+    assert(std::abs(single.mean() - 42.0) < 1e-9);
+    assert(std::abs(single.variance() - 0.0) < 1e-9);
+
+    // two observations: mean and variance both have simple closed forms
+    RunningStats two;
+    two.update(10.0);
+    two.update(20.0);
+    assert(std::abs(two.mean() - 15.0) < 1e-9);
+    assert(std::abs(two.variance() - 25.0) < 1e-9); // population variance of {10,20}
+
+    // a constant series must have exactly zero variance, not a tiny nonzero
+    // residue from floating-point drift
+    RunningStats constant;
+    for (int i = 0; i < 1000; ++i) constant.update(3.14159);
+    assert(constant.count() == 1000);
+    assert(std::abs(constant.mean() - 3.14159) < 1e-9);
+    assert(std::abs(constant.variance() - 0.0) < 1e-9);
+
+    // numerical stability: values with a large common offset would break
+    // the naive E[X^2] - E[X]^2 formula through catastrophic cancellation,
+    // but the true variance here is small and must still come out accurate.
+    RunningStats offset;
+    double base = 1e9;
+    double spread[] = {base + 1.0, base + 2.0, base + 3.0, base + 4.0, base + 5.0};
+    for (double x : spread) offset.update(x);
+    assert(std::abs(offset.mean() - (base + 3.0)) < 1e-3);
+    assert(std::abs(offset.variance() - 2.0) < 1e-3); // population variance of {1,2,3,4,5}
+
+    std::cout << "PASS: mean=" << stats.mean() << " var=" << stats.variance() << "\\n";
+    return 0;
+}`,
+  solution: `class RunningStats {
+    long count_ = 0;
+    double mean_ = 0.0;
+    double m2_ = 0.0; // running sum of squared deviations from the current mean
+
+public:
+    void update(double x) {
+        ++count_;
+        double delta = x - mean_;
+        mean_ += delta / count_;
+        double delta2 = x - mean_;
+        m2_ += delta * delta2;
+    }
+
+    double mean() const { return mean_; }
+    double variance() const { return count_ > 0 ? m2_ / count_ : 0.0; }
+    long count() const { return count_; }
+};
+
+// Why this is stable: mean_ tracks the true running mean at every step,
+// so delta and delta2 stay small relative to the data instead of
+// subtracting two large, nearly-equal numbers (E[X^2] - E[X]^2), which
+// is where the naive one-pass formula loses precision.`
+},
+{
+  id: "thread-pool",
+  category: "conc",
+  categoryLabel: "Concurrency",
+  title: "Thread Pool with Futures",
+  difficulty: 2,
+  std: "C++11",
+  time: "30–40 min",
+  description: "Implement <b>ThreadPool</b>, a fixed-size pool of worker threads created in the constructor. <b>submit(task)</b> accepts any callable with no arguments, enqueues it for execution on one of the pool's threads, and immediately returns a <b>std::future</b> that will eventually hold the callable's return value. Tasks queued before all workers are busy must still eventually run; results retrieved via <b>future::get()</b> must match what each task would have returned if called directly. The destructor must cleanly stop all workers, letting already-queued tasks finish, without leaking threads.",
+  followups: [
+    "What happens if a submitted task throws an exception — where does it surface, and does it crash a worker thread?",
+    "How would you add task priorities so urgent work jumps the queue?",
+    "How would you support work-stealing between worker threads to reduce idle time when work is unevenly distributed?",
+    "What's the overhead of std::packaged_task/std::future here, and how would you redesign this for a latency-sensitive path where that overhead isn't acceptable?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <future>
+#include <vector>
+#include <mutex>
+
+class ThreadPool {
+public:
+    explicit ThreadPool(size_t numThreads); // TODO
+    ~ThreadPool();                          // TODO: signal stop, join all threads
+
+    // TODO: enqueue a task, return a future for its result
+    template <typename F>
+    auto submit(F task) -> std::future<decltype(task())>;
+};
+
+int main() {
+    ThreadPool pool(4);
+
+    std::vector<std::future<int>> results;
+    for (int i = 0; i < 100; ++i)
+        results.push_back(pool.submit([i] { return i * i; }));
+
+    // check each individual result, not just the aggregate sum — a pool
+    // that scrambles results across futures could still pass a sum check
+    for (int i = 0; i < 100; ++i) assert(results[i].get() == i * i);
+
+    long long sum = 0;
+    for (int i = 0; i < 100; ++i) sum += (long long)i * i;
+
+    // a pool with only ONE worker thread must still run every task
+    // (serialized, but none dropped) and return correct per-task results
+    {
+        ThreadPool single(1);
+        std::vector<std::future<int>> singleResults;
+        for (int i = 0; i < 50; ++i)
+            singleResults.push_back(single.submit([i] { return i + 1; }));
+        for (int i = 0; i < 50; ++i) assert(singleResults[i].get() == i + 1);
+    }
+
+    // far more queued tasks than worker threads: tasks queued while all
+    // workers are busy must still eventually run to completion
+    {
+        ThreadPool small(2);
+        std::vector<std::future<int>> many;
+        for (int i = 0; i < 500; ++i)
+            many.push_back(small.submit([i] { return i * 2; }));
+        for (int i = 0; i < 500; ++i) assert(many[i].get() == i * 2);
+    }
+
+    // tasks that mutate shared state under their own lock, to make sure
+    // the pool doesn't introduce extra unsynchronized access of its own
+    {
+        ThreadPool mutating(4);
+        std::mutex m;
+        long long total = 0;
+        std::vector<std::future<void>> voidResults;
+        for (int i = 0; i < 1000; ++i) {
+            voidResults.push_back(mutating.submit([&m, &total, i]() -> void {
+                std::lock_guard<std::mutex> lock(m);
+                total += i;
+            }));
+        }
+        for (auto& f : voidResults) f.get();
+        long long expectedTotal = 0;
+        for (int i = 0; i < 1000; ++i) expectedTotal += i;
+        assert(total == expectedTotal);
+    }
+
+    std::cout << "PASS: sum = " << sum << "\n";
+    return 0;
+}`,
+  solution: `#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+#include <memory>
+
+class ThreadPool {
+    std::vector<std::thread> workers_;
+    std::queue<std::function<void()>> tasks_;
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    bool stop_ = false;
+
+public:
+    explicit ThreadPool(size_t numThreads) {
+        for (size_t i = 0; i < numThreads; ++i) {
+            workers_.emplace_back([this] {
+                while (true) {
+                    std::function<void()> task;
+                    {
+                        std::unique_lock<std::mutex> lock(mutex_);
+                        cv_.wait(lock, [this] { return stop_ || !tasks_.empty(); });
+                        if (stop_ && tasks_.empty()) return;
+                        task = std::move(tasks_.front());
+                        tasks_.pop();
+                    }
+                    task();
+                }
+            });
+        }
+    }
+
+    ~ThreadPool() {
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            stop_ = true;
+        }
+        cv_.notify_all();
+        for (auto& w : workers_) w.join();
+    }
+
+    template <typename F>
+    auto submit(F task) -> std::future<decltype(task())> {
+        using Ret = decltype(task());
+        auto packaged = std::make_shared<std::packaged_task<Ret()>>(std::move(task));
+        std::future<Ret> fut = packaged->get_future();
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            tasks_.emplace([packaged] { (*packaged)(); });
+        }
+        cv_.notify_one();
+        return fut;
+    }
+};`
+},
+{
+  id: "deadlock-free-transfer",
+  category: "conc",
+  categoryLabel: "Concurrency",
+  title: "Deadlock-Free Multi-Lock Acquisition",
+  difficulty: 2,
+  std: "C++17",
+  time: "20–25 min",
+  description: "Implement <b>transfer(Account&amp; from, Account&amp; to, long amount)</b>, moving funds between two accounts, each guarded by its own mutex. Many threads call transfer concurrently, and&mdash;critically&mdash;transfers happen in both directions at once (some threads move A&rarr;B while others move B&rarr;A on the same pair of accounts). The implementation must never deadlock regardless of the order threads happen to interleave in, and the sum of both balances must be exactly conserved under concurrent load.",
+  followups: [
+    "What was actually about to deadlock here, and why does locking both mutexes in a fixed global order (or via the standard library's multi-lock facility) fix it?",
+    "How would you extend this to transferring between more than two accounts at once (e.g. splitting one payment across three accounts)?",
+    "Is there a way to avoid holding both locks for the whole critical section, and would you want to?",
+    "How would you test this for deadlocks in CI rather than relying on manual review?"
+  ],
+  runner: `#include <mutex>
+#include <thread>
+#include <vector>
+#include <iostream>
+#include <cassert>
+
+struct Account {
+    std::mutex mtx;
+    long balance;
+};
+
+// TODO: transfer funds without risking deadlock, even when threads
+// transfer in opposite directions (A->B and B->A) concurrently.
+void transfer(Account& from, Account& to, long amount);
+
+int main() {
+    Account a{{}, 1000};
+    Account b{{}, 1000};
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < 300; ++i) {
+        threads.emplace_back(transfer, std::ref(a), std::ref(b), 1);
+        threads.emplace_back(transfer, std::ref(b), std::ref(a), 1);
+    }
+    for (auto& t : threads) t.join();
+
+    assert(a.balance + b.balance == 2000); // nothing lost or duplicated
+    // equal numbers of transfers in each direction must net out exactly,
+    // not just conserve the total — this catches a lock that "works" but
+    // occasionally applies a transfer twice or drops one silently
+    assert(a.balance == 1000 && b.balance == 1000);
+
+    // asymmetric transfer counts must produce a predictable, exact result
+    Account c{{}, 500};
+    Account d{{}, 500};
+    std::vector<std::thread> asym;
+    for (int i = 0; i < 400; ++i) asym.emplace_back(transfer, std::ref(c), std::ref(d), 1);
+    for (int i = 0; i < 150; ++i) asym.emplace_back(transfer, std::ref(d), std::ref(c), 1);
+    for (auto& t : asym) t.join();
+    assert(c.balance + d.balance == 1000);
+    assert(c.balance == 500 - 400 + 150 && d.balance == 500 + 400 - 150);
+
+    // three accounts with transfers going around a cycle (x->y, y->z, z->x)
+    // concurrently in BOTH directions on every pair: this creates the
+    // classic circular lock-ordering hazard across three mutexes, not just
+    // two, and is exactly the shape that deadlocks a naive "lock 'from'
+    // then 'to'" implementation.
+    Account x{{}, 300}, y{{}, 300}, z{{}, 300};
+    std::vector<std::thread> cyclic;
+    for (int i = 0; i < 200; ++i) {
+        cyclic.emplace_back(transfer, std::ref(x), std::ref(y), 1);
+        cyclic.emplace_back(transfer, std::ref(y), std::ref(x), 1);
+        cyclic.emplace_back(transfer, std::ref(y), std::ref(z), 1);
+        cyclic.emplace_back(transfer, std::ref(z), std::ref(y), 1);
+        cyclic.emplace_back(transfer, std::ref(z), std::ref(x), 1);
+        cyclic.emplace_back(transfer, std::ref(x), std::ref(z), 1);
+    }
+    for (auto& t : cyclic) t.join(); // must complete: a deadlock here would hang the test
+    assert(x.balance + y.balance + z.balance == 900); // total conserved across all three
+    assert(x.balance == 300 && y.balance == 300 && z.balance == 300); // every pair's flow canceled out
+
+    std::cout << "PASS: a=" << a.balance << " b=" << b.balance << "\n";
+    return 0;
+}`,
+  solution: `void transfer(Account& from, Account& to, long amount) {
+    std::scoped_lock lock(from.mtx, to.mtx); // C++17: locks both, deadlock-free
+    from.balance -= amount;
+    to.balance += amount;
+}
+
+// std::scoped_lock locks its arguments together using the same
+// deadlock-avoidance algorithm as std::lock(), so it's safe even
+// though different threads lock 'from' and 'to' in opposite orders.
+// Locking from.mtx then to.mtx by hand in both directions is exactly
+// the bug this exists to prevent.`
+},
+{
+  id: "running-median",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "Running Median from a Data Stream",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–30 min",
+  description: "Implement <b>MedianTracker</b>, which reports the median of every number seen so far as new numbers arrive one at a time in arbitrary order (they must not be assumed sorted, and the full history cannot simply be re-sorted on every query). <b>addNumber(num)</b> must run in O(log n); <b>getMedian()</b> must run in O(1). For an even count of numbers, the median is the average of the two middle values.",
+  followups: [
+    "How would you extend this to a sliding-window median over only the last N observations?",
+    "What's the tradeoff between this two-heap approach and keeping a balanced order-statistics tree instead?",
+    "How would you handle a stream with a large number of duplicate values efficiently?",
+    "How would this design change if you needed the running p90 or p99, not just the median?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <cmath>
+#include <vector>
+#include <algorithm>
+
+class MedianTracker {
+public:
+    void addNumber(double num); // TODO: O(log n)
+    double getMedian() const;   // TODO: O(1)
+};
+
+int main() {
+    MedianTracker t;
+    t.addNumber(5);
+    assert(std::abs(t.getMedian() - 5.0) < 1e-9); // single element is its own median
+
+    t.addNumber(2);
+    assert(std::abs(t.getMedian() - 3.5) < 1e-9); // (2+5)/2
+    t.addNumber(8);
+    assert(std::abs(t.getMedian() - 5.0) < 1e-9); // middle of 2,5,8
+    t.addNumber(1);
+    assert(std::abs(t.getMedian() - 3.5) < 1e-9); // (2+5)/2 of 1,2,5,8
+    t.addNumber(9);
+    assert(std::abs(t.getMedian() - 5.0) < 1e-9); // middle of 1,2,5,8,9
+
+    // duplicate values must be handled like any other value, not deduplicated
+    MedianTracker dup;
+    for (double v : {4.0, 4.0, 4.0, 4.0}) dup.addNumber(v);
+    assert(std::abs(dup.getMedian() - 4.0) < 1e-9);
+    dup.addNumber(100.0);
+    assert(std::abs(dup.getMedian() - 4.0) < 1e-9); // middle of 4,4,4,4,100 is 4
+
+    // strictly descending input order must rebalance correctly, not just
+    // ascending or randomly-ordered input
+    MedianTracker desc;
+    std::vector<double> descInput = {9, 8, 7, 6, 5, 4, 3, 2, 1};
+    std::vector<double> seenSoFar;
+    for (double v : descInput) {
+        desc.addNumber(v);
+        seenSoFar.push_back(v);
+        std::vector<double> sorted = seenSoFar;
+        std::sort(sorted.begin(), sorted.end());
+        size_t n = sorted.size();
+        double expected = (n % 2 == 1) ? sorted[n / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0;
+        assert(std::abs(desc.getMedian() - expected) < 1e-9);
+    }
+
+    // randomized stress test: cross-check against a brute-force sort after
+    // every insertion, across a much longer and less structured stream
+    MedianTracker stress;
+    std::vector<double> seen;
+    unsigned seed = 12345;
+    for (int i = 0; i < 500; ++i) {
+        seed = seed * 1103515245u + 12345u; // simple deterministic PRNG, no <random> needed
+        double v = (double)(seed % 10000);
+        stress.addNumber(v);
+        seen.push_back(v);
+        std::vector<double> sorted = seen;
+        std::sort(sorted.begin(), sorted.end());
+        size_t n = sorted.size();
+        double expected = (n % 2 == 1) ? sorted[n / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2.0;
+        assert(std::abs(stress.getMedian() - expected) < 1e-6);
+    }
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <queue>
+#include <vector>
+#include <functional>
+
+class MedianTracker {
+    // lower half: max-heap, largest of the lower half sits on top
+    std::priority_queue<double> lower_;
+    // upper half: min-heap, smallest of the upper half sits on top
+    std::priority_queue<double, std::vector<double>, std::greater<double>> upper_;
+
+public:
+    void addNumber(double num) {
+        if (lower_.empty() || num <= lower_.top()) lower_.push(num);
+        else upper_.push(num);
+
+        // rebalance so sizes differ by at most 1, with lower_ >= upper_
+        if (lower_.size() > upper_.size() + 1) {
+            upper_.push(lower_.top());
+            lower_.pop();
+        } else if (upper_.size() > lower_.size()) {
+            lower_.push(upper_.top());
+            upper_.pop();
+        }
+    }
+
+    double getMedian() const {
+        if (lower_.size() > upper_.size()) return lower_.top();
+        return (lower_.top() + upper_.top()) / 2.0;
+    }
+};`
+},
+{
+  id: "sliding-window-max",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "Sliding Window Maximum",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–30 min",
+  description: "Implement <b>SlidingWindowMax</b>, constructed with a fixed window size <b>k</b>. <b>push(value)</b> feeds one new value from a stream; once more than k values have been pushed, the oldest one automatically falls out of the window. <b>max()</b> returns the maximum value currently in the window. Both operations must run in amortized O(1) time regardless of k &mdash; recomputing the max over the whole window on every push is not acceptable.",
+  followups: [
+    "Why is this amortized O(1) per push even though a single push can pop many elements from the internal structure at once?",
+    "How would you extend this to report the sliding window minimum at the same time as the maximum?",
+    "Where would this pattern show up in a trading system (e.g. rolling high/low over the last N ticks)?",
+    "How would you adapt this if you needed to query the max over an arbitrary past window, not just the current one?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <vector>
+#include <algorithm>
+
+class SlidingWindowMax {
+public:
+    explicit SlidingWindowMax(size_t k); // TODO
+    void push(int value);                // TODO: amortized O(1)
+    int max() const;                     // TODO: O(1)
+};
+
+int main() {
+    SlidingWindowMax w(3);
+    w.push(1); w.push(3); w.push(-1);
+    assert(w.max() == 3); // window: [1,3,-1]
+    w.push(-3);
+    assert(w.max() == 3); // window: [3,-1,-3]
+    w.push(5);
+    assert(w.max() == 5); // window: [-1,-3,5]
+    w.push(3);
+    assert(w.max() == 5); // window: [-3,5,3]
+    w.push(6);
+    assert(w.max() == 6); // window: [5,3,6]
+
+    // window size 1: max is always exactly the most recent value
+    SlidingWindowMax w1(1);
+    w1.push(10);
+    assert(w1.max() == 10);
+    w1.push(2);
+    assert(w1.max() == 2);
+    w1.push(2);
+    assert(w1.max() == 2);
+
+    // strictly increasing stream: every push should push the max forward,
+    // and old smaller values must fall out of the window on schedule
+    SlidingWindowMax inc(4);
+    for (int i = 1; i <= 10; ++i) {
+        inc.push(i);
+        assert(inc.max() == i); // increasing values are always the new max
+    }
+
+    // strictly decreasing stream: the max must correctly expire once it
+    // falls outside the window, even though it was the largest value seen
+    SlidingWindowMax dec(3);
+    dec.push(10); dec.push(9); dec.push(8);
+    assert(dec.max() == 10); // window: [10,9,8]
+    dec.push(7);
+    assert(dec.max() == 9); // window: [9,8,7], 10 has expired
+    dec.push(6);
+    assert(dec.max() == 8); // window: [8,7,6]
+
+    // randomized stress test against an O(k) brute-force recompute
+    const size_t K = 5;
+    SlidingWindowMax stress(K);
+    std::vector<int> history;
+    unsigned seed = 999;
+    for (int i = 0; i < 500; ++i) {
+        seed = seed * 1103515245u + 12345u;
+        int v = (int)(seed % 200) - 100;
+        stress.push(v);
+        history.push_back(v);
+        size_t start = history.size() >= K ? history.size() - K : 0;
+        int bruteMax = history[start];
+        for (size_t j = start; j < history.size(); ++j) bruteMax = std::max(bruteMax, history[j]);
+        assert(stress.max() == bruteMax);
+    }
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <deque>
+#include <cstddef>
+#include <utility>
+
+class SlidingWindowMax {
+    size_t k_;
+    long index_ = -1;
+    std::deque<std::pair<long, int>> dq_; // (index, value), decreasing value order
+
+public:
+    explicit SlidingWindowMax(size_t k) : k_(k) {}
+
+    void push(int value) {
+        ++index_;
+        while (!dq_.empty() && dq_.back().second <= value) dq_.pop_back();
+        dq_.push_back({index_, value});
+        while (dq_.front().first <= index_ - (long)k_) dq_.pop_front();
+    }
+
+    int max() const { return dq_.front().second; }
+};`
+},
+{
+  id: "hot-path-logger",
+  category: "sys",
+  categoryLabel: "System Design",
+  title: "Lock-Free Logger for the Hot Path",
+  difficulty: 2,
+  std: "C++11",
+  time: "30–35 min",
+  description: "Trading logic running on a latency-sensitive thread needs to emit diagnostic messages without ever blocking on I/O, taking a lock, or allocating memory. Implement <b>HotPathLogger</b>: <b>log(message)</b> is called only from a single hot-path producer thread and must complete in bounded, allocation-free, lock-free time, returning <b>false</b> (dropping the message) only if the internal buffer is momentarily full. A single background consumer thread calls <b>drain(out, outLen)</b> to copy the next queued message into its own buffer at its own pace, without ever blocking the producer.",
+  followups: [
+    "Why must log() never allocate or take a lock, and what would actually break if it did?",
+    "What should happen if the drainer falls permanently behind the producer — drop new messages, block the producer, or grow the buffer? What are the tradeoffs?",
+    "How would you extend this to preserve variable-length messages instead of truncating to a fixed slot size?",
+    "How would you capture an accurate timestamp for when log() was called rather than when drain() eventually processes it, and why does that distinction matter for debugging a production incident?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <thread>
+#include <vector>
+#include <string>
+#include <cstring>
+
+class HotPathLogger {
+public:
+    explicit HotPathLogger(size_t capacity); // TODO: pre-allocates capacity slots
+    // Called only from the single hot-path thread. Must not allocate,
+    // lock, or block. Returns false (message dropped) only if full.
+    bool log(const char* message);           // TODO
+    // Called only from the single background thread. Copies the next
+    // queued message (null-terminated, truncated to outLen-1) into out
+    // and returns true, or returns false if nothing is queued yet.
+    bool drain(char* out, size_t outLen);    // TODO
+};
+
+int main() {
+    // draining an empty, freshly constructed logger must fail cleanly, not
+    // block or return garbage
+    HotPathLogger fresh(8);
+    char emptyBuf[64];
+    assert(!fresh.drain(emptyBuf, sizeof(emptyBuf)));
+
+    // a small, single-threaded logger: log() must eventually return false
+    // once the buffer is genuinely full, and every logged message must
+    // come back out through drain() in the exact order it went in, with
+    // no message lost, duplicated, or corrupted along the way
+    {
+        HotPathLogger small(4);
+        int accepted = 0;
+        for (int i = 0; i < 10; ++i) {
+            if (small.log(("m" + std::to_string(accepted)).c_str())) ++accepted;
+            else break;
+        }
+        assert(accepted >= 1 && accepted <= 4); // some bounded number of slots, not unbounded growth
+        assert(!small.log("overflow")); // once full, further logs are dropped, not blocked or crashed
+
+        // draining what was accepted must return messages in FIFO order
+        char out[64];
+        int drained = 0;
+        while (small.drain(out, sizeof(out))) {
+            assert(std::string(out) == ("m" + std::to_string(drained)));
+            ++drained;
+        }
+        assert(drained == accepted);
+        assert(!small.drain(out, sizeof(out))); // fully drained, nothing left
+
+        // draining frees capacity: after full drain, logging must succeed again
+        assert(small.log("after-drain"));
+    }
+
+    // truncation: a message longer than the caller's output buffer must be
+    // truncated and still null-terminated, not overflow the caller's buffer
+    {
+        HotPathLogger t(4);
+        std::string longMsg(200, 'x');
+        assert(t.log(longMsg.c_str()));
+        char smallOut[16];
+        assert(t.drain(smallOut, sizeof(smallOut)));
+        assert(std::strlen(smallOut) == 15); // truncated to outLen - 1, null-terminated
+    }
+
+    HotPathLogger logger(1024);
+    std::vector<std::string> delivered;
+
+    std::thread drainer([&] {
+        char buf[128];
+        while (delivered.size() < 5000) {
+            if (logger.drain(buf, sizeof(buf))) delivered.push_back(buf);
+        }
+    });
+
+    for (int i = 0; i < 5000; ++i) {
+        std::string msg = "order_ack_" + std::to_string(i);
+        while (!logger.log(msg.c_str())) { /* spin: buffer momentarily full */ }
+    }
+
+    drainer.join();
+    assert(delivered.size() == 5000);
+    // check every message, not just the endpoints — a logger that drops or
+    // reorders messages in the middle could still pass a front/back-only check
+    for (int i = 0; i < 5000; ++i) assert(delivered[i] == "order_ack_" + std::to_string(i));
+
+    std::cout << "PASS: delivered " << delivered.size() << " messages\\n";
+    return 0;
+}`,
+  solution: `#include <atomic>
+#include <vector>
+#include <cstring>
+
+class HotPathLogger {
+    static constexpr size_t kMsgLen = 128;
+    struct Slot { char data[kMsgLen]; };
+
+    std::vector<Slot> buf_;
+    size_t capacity_;
+    std::atomic<size_t> head_{0};
+    std::atomic<size_t> tail_{0};
+
+public:
+    explicit HotPathLogger(size_t capacity) : buf_(capacity), capacity_(capacity) {}
+
+    bool log(const char* message) {
+        size_t tail = tail_.load(std::memory_order_relaxed);
+        size_t next = (tail + 1) % capacity_;
+        if (next == head_.load(std::memory_order_acquire)) return false; // full, drop
+
+        std::strncpy(buf_[tail].data, message, kMsgLen - 1);
+        buf_[tail].data[kMsgLen - 1] = '\\0';
+        tail_.store(next, std::memory_order_release);
+        return true;
+    }
+
+    bool drain(char* out, size_t outLen) {
+        size_t head = head_.load(std::memory_order_relaxed);
+        if (head == tail_.load(std::memory_order_acquire)) return false; // empty
+
+        std::strncpy(out, buf_[head].data, outLen - 1);
+        out[outLen - 1] = '\\0';
+        head_.store((head + 1) % capacity_, std::memory_order_release); // done reading, release slot
+        return true;
+    }
+};
+
+// This is the SPSC ring buffer pattern applied to logging: fixed-size,
+// pre-allocated slots mean log() never touches the allocator, and the
+// message is copied into the caller's buffer BEFORE the slot is released
+// back to the producer -- releasing it first would let the producer
+// overwrite the slot while the drainer was still reading it.`
+},
+{
+  id: "black-scholes",
+  category: "quant",
+  categoryLabel: "Quant Subject Matter",
+  title: "Black-Scholes European Option Pricer with Greeks",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–35 min",
+  description: "Implement <b>blackScholesPrice</b> and <b>blackScholesDelta</b> for a European option under the standard Black-Scholes assumptions: spot price <b>S</b>, strike <b>K</b>, continuously-compounded risk-free rate <b>r</b>, volatility <b>sigma</b>, and time to expiry <b>T</b> in years, with no dividends. <b>blackScholesPrice(S, K, r, sigma, T, isCall)</b> returns the option's theoretical price; <b>blackScholesDelta(S, K, r, sigma, T, isCall)</b> returns its delta, the sensitivity of price to a $1 move in spot. Results must satisfy put-call parity.",
+  followups: [
+    "How would you compute vega, gamma, and theta using the same d1/d2 machinery?",
+    "How does pricing change for American options, and why doesn't the closed-form Black-Scholes formula apply there?",
+    "How would you extend the model to handle a continuous dividend yield?",
+    "What real-world assumptions does Black-Scholes make that break down in practice, and how does that show up as the volatility smile?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <cmath>
+
+double blackScholesPrice(double S, double K, double r, double sigma, double T, bool isCall); // TODO
+double blackScholesDelta(double S, double K, double r, double sigma, double T, bool isCall); // TODO
+
+int main() {
+    // At-the-money call, S=K=100, r=5%, sigma=20%, T=1yr
+    double callPrice = blackScholesPrice(100.0, 100.0, 0.05, 0.20, 1.0, true);
+    assert(std::abs(callPrice - 10.4506) < 1e-3);
+
+    double putPrice = blackScholesPrice(100.0, 100.0, 0.05, 0.20, 1.0, false);
+    assert(std::abs(putPrice - 5.5735) < 1e-3);
+
+    // put-call parity: C - P == S - K * e^(-rT)
+    double parityRhs = 100.0 - 100.0 * std::exp(-0.05 * 1.0);
+    assert(std::abs((callPrice - putPrice) - parityRhs) < 1e-6);
+
+    double callDelta = blackScholesDelta(100.0, 100.0, 0.05, 0.20, 1.0, true);
+    assert(callDelta > 0.5 && callDelta < 0.7); // ATM call delta slightly above 0.5
+
+    double putDelta = blackScholesDelta(100.0, 100.0, 0.05, 0.20, 1.0, false);
+    assert(std::abs((callDelta - putDelta) - 1.0) < 1e-9); // call delta - put delta == 1
+
+    std::cout << "PASS: call=" << callPrice << " put=" << putPrice << "\\n";
+    return 0;
+}`,
+  solution: `#include <cmath>
+
+namespace {
+double normCdf(double x) { return 0.5 * std::erfc(-x / std::sqrt(2.0)); }
+
+void d1d2(double S, double K, double r, double sigma, double T, double& d1, double& d2) {
+    d1 = (std::log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * std::sqrt(T));
+    d2 = d1 - sigma * std::sqrt(T);
+}
+}
+
+double blackScholesPrice(double S, double K, double r, double sigma, double T, bool isCall) {
+    double d1, d2;
+    d1d2(S, K, r, sigma, T, d1, d2);
+    double disc = std::exp(-r * T);
+    if (isCall) return S * normCdf(d1) - K * disc * normCdf(d2);
+    return K * disc * normCdf(-d2) - S * normCdf(-d1);
+}
+
+double blackScholesDelta(double S, double K, double r, double sigma, double T, bool isCall) {
+    double d1, d2;
+    d1d2(S, K, r, sigma, T, d1, d2);
+    return isCall ? normCdf(d1) : normCdf(d1) - 1.0;
+}`
+},
+{
+  id: "implied-vol",
+  category: "quant",
+  categoryLabel: "Quant Subject Matter",
+  title: "Implied Volatility via Newton-Raphson Root-Finding",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–30 min",
+  description: "Given an observed market price for a European call option, implement <b>impliedVolatility(marketPrice, S, K, r, T)</b>, which solves for the volatility <b>sigma</b> such that the Black-Scholes price equals <b>marketPrice</b>. Use Newton-Raphson iteration, seeded from a reasonable starting guess, terminating once the price error is within a small tolerance or a maximum iteration count is reached. A Black-Scholes call pricer and its vega (dPrice/dSigma) are provided for you to call.",
+  followups: [
+    "Why can vega be near zero for deep in- or out-of-the-money options, and what does that do to Newton-Raphson's convergence?",
+    "How would you make this robust with a fallback to bisection or Brent's method when Newton-Raphson fails to converge?",
+    "How would you adapt this to solve for implied vol on a put instead of a call?",
+    "Why does implied volatility vary by strike in real markets (the volatility smile/skew) when Black-Scholes assumes a single constant sigma?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <cmath>
+
+// Provided: a Black-Scholes call pricer and its vega.
+double bsCallPrice(double S, double K, double r, double sigma, double T);
+double bsVega(double S, double K, double r, double sigma, double T);
+
+// TODO: solve for sigma such that bsCallPrice(S, K, r, sigma, T) == marketPrice,
+// using Newton-Raphson.
+double impliedVolatility(double marketPrice, double S, double K, double r, double T);
+
+namespace {
+double normCdf(double x) { return 0.5 * std::erfc(-x / std::sqrt(2.0)); }
+double normPdf(double x) {
+    static const double invSqrt2Pi = 0.3989422804014327;
+    return invSqrt2Pi * std::exp(-0.5 * x * x);
+}
+}
+double bsCallPrice(double S, double K, double r, double sigma, double T) {
+    double d1 = (std::log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * std::sqrt(T));
+    double d2 = d1 - sigma * std::sqrt(T);
+    return S * normCdf(d1) - K * std::exp(-r * T) * normCdf(d2);
+}
+double bsVega(double S, double K, double r, double sigma, double T) {
+    double d1 = (std::log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * std::sqrt(T));
+    return S * normPdf(d1) * std::sqrt(T);
+}
+
+int main() {
+    double S = 100.0, K = 100.0, r = 0.05, T = 1.0, trueVol = 0.25;
+    double marketPrice = bsCallPrice(S, K, r, trueVol, T);
+
+    double recoveredVol = impliedVolatility(marketPrice, S, K, r, T);
+    assert(std::abs(recoveredVol - trueVol) < 1e-6);
+
+    // deep OTM option: harder to converge, vega is small
+    double otmPrice = bsCallPrice(S, 150.0, r, trueVol, T);
+    double otmVol = impliedVolatility(otmPrice, S, 150.0, r, T);
+    assert(std::abs(otmVol - trueVol) < 1e-4);
+
+    std::cout << "PASS: recovered vol = " << recoveredVol << "\\n";
+    return 0;
+}`,
+  solution: `double impliedVolatility(double marketPrice, double S, double K, double r, double T) {
+    double sigma = 0.3; // reasonable starting guess
+    const int maxIters = 100;
+    const double tol = 1e-8;
+
+    for (int i = 0; i < maxIters; ++i) {
+        double price = bsCallPrice(S, K, r, sigma, T);
+        double diff = price - marketPrice;
+        if (std::abs(diff) < tol) break;
+
+        double vega = bsVega(S, K, r, sigma, T);
+        if (vega < 1e-10) break; // avoid dividing by ~0 near deep ITM/OTM or T->0
+
+        sigma -= diff / vega;
+        if (sigma <= 0.0) sigma = 1e-4; // keep the iterate in a valid domain
+    }
+    return sigma;
+}
+
+// Newton-Raphson converges quadratically here because vega (the price's
+// derivative w.r.t. sigma) is well-behaved and always positive for a
+// vanilla option -- but it can still misbehave for deep ITM/OTM options
+// where vega is near zero, which is why production code typically falls
+// back to bisection or Brent's method in that regime.`
+},
+{
+  id: "topo-sort",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "Topological Sort of a Task Dependency Graph",
+  difficulty: 2,
+  std: "C++11",
+  time: "25–30 min",
+  description: "Given <b>n</b> tasks numbered 0 to n&minus;1 and a list of prerequisite pairs <b>(a, b)</b> meaning task <b>a</b> must run before task <b>b</b>, implement <b>topologicalOrder(n, prerequisites)</b>, which returns some valid ordering of all n tasks that respects every prerequisite. If the prerequisites contain a cycle (no valid ordering exists), return an empty vector instead. Multiple valid orderings may exist for a given input &mdash; any one of them is acceptable.",
+  followups: [
+    "Kahn's algorithm (BFS on in-degrees) and a DFS-based topological sort both work here — what's the practical difference (cycle detection, memory access pattern, ease of parallelizing)?",
+    "How would you modify this to also report exactly which tasks are involved in a cycle, not just that one exists?",
+    "How would you extend this to return ALL valid topological orderings instead of just one?",
+    "Where does this show up outside of scheduling — e.g. build systems, spreadsheet formula evaluation, or resolving settlement dependencies between trades?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <vector>
+#include <utility>
+
+// TODO: return a valid topological order of 0..n-1 respecting every
+// (a, b) prerequisite pair (a before b), or {} if a cycle makes that
+// impossible.
+std::vector<int> topologicalOrder(int n, const std::vector<std::pair<int, int>>& prerequisites);
+
+// Checks that 'order' is a permutation of 0..n-1 that respects every
+// prerequisite -- used because several different orderings can be valid.
+bool isValidTopoOrder(int n, const std::vector<std::pair<int, int>>& prerequisites, const std::vector<int>& order) {
+    if ((int)order.size() != n) return false;
+    std::vector<int> position(n, -1);
+    for (int i = 0; i < n; ++i) {
+        if (order[i] < 0 || order[i] >= n || position[order[i]] != -1) return false; // not a permutation
+        position[order[i]] = i;
+    }
+    for (auto& pr : prerequisites)
+        if (position[pr.first] > position[pr.second]) return false; // prerequisite violated
+    return true;
+}
+
+int main() {
+    std::vector<std::pair<int, int>> chain = {{0, 1}, {1, 2}, {2, 3}};
+    assert(isValidTopoOrder(4, chain, topologicalOrder(4, chain)));
+
+    // diamond dependency: 0 feeds into both 1 and 2, which both feed into 3
+    std::vector<std::pair<int, int>> diamond = {{0, 1}, {0, 2}, {1, 3}, {2, 3}};
+    assert(isValidTopoOrder(4, diamond, topologicalOrder(4, diamond)));
+
+    // two independent chains with no relation between them
+    std::vector<std::pair<int, int>> disconnected = {{0, 1}, {2, 3}};
+    assert(isValidTopoOrder(4, disconnected, topologicalOrder(4, disconnected)));
+
+    // no prerequisites at all: every task is immediately runnable
+    std::vector<std::pair<int, int>> none;
+    auto order = topologicalOrder(5, none);
+    assert(isValidTopoOrder(5, none, order));
+
+    // a simple 3-cycle must be detected: no valid order exists
+    std::vector<std::pair<int, int>> cyclic = {{0, 1}, {1, 2}, {2, 0}};
+    assert(topologicalOrder(3, cyclic).empty());
+
+    // a cycle among a SUBSET of otherwise-fine tasks still makes the
+    // whole graph unsortable, not just the cyclic part
+    std::vector<std::pair<int, int>> partialCycle = {{0, 1}, {1, 2}, {3, 4}, {4, 3}};
+    assert(topologicalOrder(5, partialCycle).empty());
+
+    // a self-loop is a trivial cycle
+    std::vector<std::pair<int, int>> selfLoop = {{0, 0}};
+    assert(topologicalOrder(1, selfLoop).empty());
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <queue>
+
+std::vector<int> topologicalOrder(int n, const std::vector<std::pair<int, int>>& prerequisites) {
+    std::vector<std::vector<int>> adj(n);
+    std::vector<int> indegree(n, 0);
+    for (auto& pr : prerequisites) {
+        adj[pr.first].push_back(pr.second);
+        ++indegree[pr.second];
+    }
+
+    std::queue<int> ready;
+    for (int i = 0; i < n; ++i)
+        if (indegree[i] == 0) ready.push(i);
+
+    std::vector<int> order;
+    order.reserve(n);
+    while (!ready.empty()) {
+        int u = ready.front();
+        ready.pop();
+        order.push_back(u);
+        for (int v : adj[u])
+            if (--indegree[v] == 0) ready.push(v);
+    }
+
+    if ((int)order.size() != n) return {}; // some nodes never reached indegree 0: there's a cycle
+    return order;
+}
+
+// This is Kahn's algorithm: repeatedly peel off nodes with no remaining
+// prerequisites. If a cycle exists, some nodes' in-degree never drops to
+// zero, so the final order comes up short of n -- that's the cycle check,
+// with no separate visited/recursion-stack bookkeeping needed.`
+},
+{
+  id: "connected-components",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "Connected Components via Union-Find",
+  difficulty: 2,
+  std: "C++11",
+  time: "20–25 min",
+  description: "Implement <b>UnionFind</b> (disjoint-set union), constructed for <b>n</b> elements numbered 0 to n&minus;1. <b>unite(a, b)</b> merges the sets containing a and b; <b>connected(a, b)</b> reports whether they're currently in the same set. Both must run in amortized near-O(1) time via path compression and union by rank (or size) &mdash; a naive O(n) find/union is not acceptable. Then implement <b>countComponents(n, edges)</b>, which uses a UnionFind to return the number of connected components in an undirected graph on n nodes given a list of edges.",
+  followups: [
+    "How do path compression and union by rank combine to give the near-O(1) amortized bound (inverse Ackermann), and what happens if you only implement one of the two?",
+    "How would you extend this to also track the size of each component cheaply, without a separate O(n) pass?",
+    "How would you support 'undo' of a union operation — what does that cost you compared to the version without it?",
+    "Where does union-find show up in a trading system (e.g. grouping correlated instruments into clusters, netting positions across linked accounts)?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <vector>
+#include <utility>
+
+class UnionFind {
+public:
+    explicit UnionFind(int n);      // TODO
+    int find(int x);                // TODO: path compression
+    void unite(int a, int b);       // TODO: union by rank or size
+    bool connected(int a, int b);   // TODO
+};
+
+// TODO: build a UnionFind from 'edges' and count distinct components among 0..n-1
+int countComponents(int n, const std::vector<std::pair<int, int>>& edges);
+
+int main() {
+    UnionFind uf(6);
+    assert(!uf.connected(0, 1));
+    uf.unite(0, 1);
+    assert(uf.connected(0, 1));
+    assert(!uf.connected(0, 2));
+
+    uf.unite(1, 2);
+    assert(uf.connected(0, 2)); // transitivity: 0-1-2 now one component
+
+    uf.unite(3, 4);
+    assert(uf.connected(3, 4));
+    assert(!uf.connected(0, 3)); // separate components stay separate
+
+    uf.unite(0, 4); // merges {0,1,2} with {3,4}
+    assert(uf.connected(2, 4));
+    assert(uf.connected(1, 3));
+    assert(!uf.connected(0, 5)); // 5 was never unioned with anything
+
+    uf.unite(5, 5); // uniting a node with itself must be a harmless no-op
+    assert(uf.connected(5, 5));
+    assert(!uf.connected(5, 0));
+
+    uf.unite(0, 1); // uniting an already-connected pair again must not corrupt state
+    assert(uf.connected(0, 1));
+
+    std::vector<std::pair<int, int>> edges = {{0, 1}, {1, 2}, {3, 4}};
+    assert(countComponents(6, edges) == 3); // {0,1,2}, {3,4}, {5}
+
+    assert(countComponents(4, {}) == 4); // no edges: every node is its own component
+
+    std::vector<std::pair<int, int>> allConnected = {{0, 1}, {1, 2}, {2, 3}};
+    assert(countComponents(4, allConnected) == 1); // fully connected chain
+
+    // a redundant edge closing a cycle must not be miscounted as splitting anything
+    std::vector<std::pair<int, int>> withCycle = {{0, 1}, {1, 2}, {2, 0}};
+    assert(countComponents(3, withCycle) == 1);
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <algorithm>
+
+class UnionFind {
+    std::vector<int> parent_;
+    std::vector<int> rank_;
+
+public:
+    explicit UnionFind(int n) : parent_(n), rank_(n, 0) {
+        for (int i = 0; i < n; ++i) parent_[i] = i;
+    }
+
+    int find(int x) {
+        if (parent_[x] != x) parent_[x] = find(parent_[x]); // path compression
+        return parent_[x];
+    }
+
+    void unite(int a, int b) {
+        int ra = find(a), rb = find(b);
+        if (ra == rb) return;
+        if (rank_[ra] < rank_[rb]) std::swap(ra, rb);
+        parent_[rb] = ra; // attach the lower-rank root under the higher-rank root
+        if (rank_[ra] == rank_[rb]) ++rank_[ra];
+    }
+
+    bool connected(int a, int b) { return find(a) == find(b); }
+};
+
+int countComponents(int n, const std::vector<std::pair<int, int>>& edges) {
+    UnionFind uf(n);
+    for (auto& e : edges) uf.unite(e.first, e.second);
+
+    int count = 0;
+    for (int i = 0; i < n; ++i)
+        if (uf.find(i) == i) ++count; // count nodes that are their own root
+    return count;
+}`
+},
+{
+  id: "spsc-ring-buffer",
+  category: "ds",
+  categoryLabel: "Data Structures",
+  title: "Lock-Free SPSC Ring Buffer",
+  difficulty: 3,
+  std: "C++11",
+  time: "35–45 min",
+  description: "Implement a fixed-capacity queue, <b>SPSCRingBuffer&lt;T, Capacity&gt;</b>, that a single producer thread and a single consumer thread can use concurrently without ever taking a lock. <b>push(item)</b> returns <b>false</b> instead of blocking when the buffer is full; <b>pop(item)</b> returns <b>false</b> instead of blocking when it's empty. Capacity is a compile-time power of two. The implementation must be correct under the C++ memory model for exactly one producer and one consumer &mdash; it does not need to support multiple producers or multiple consumers. No mutexes, no blocking, no busy-waiting inside push/pop beyond the caller's own retry loop.",
+  followups: [
+    "Which memory_order is actually required on each atomic load/store, and what breaks if you use relaxed everywhere?",
+    "How would this change to support multiple producers (MPSC) safely?",
+    "How do you size the buffer and measure whether it's actually lock-free vs. wait-free in practice?",
+    "What happens on a CPU with a weaker memory model than x86 (e.g. ARM) if the ordering is wrong?"
+  ],
+  runner: `#include <atomic>
+#include <thread>
+#include <vector>
+#include <iostream>
+#include <cassert>
+
+template <typename T, size_t Capacity>
+class SPSCRingBuffer {
+    // TODO: implement push() and pop()
+public:
+    bool push(const T& item);
+    bool pop(T& item);
+};
+
+int main() {
+    SPSCRingBuffer<int, 1024> buffer;
+    const int N = 100000;
+    long long expectedSum = (long long)N * (N - 1) / 2;
+    long long actualSum = 0;
+
+    std::thread producer([&]() {
+        for (int i = 0; i < N; ++i) {
+            while (!buffer.push(i)) { /* spin */ }
+        }
+    });
+
+    std::thread consumer([&]() {
+        int received = 0;
+        int value;
+        while (received < N) {
+            if (buffer.pop(value)) {
+                actualSum += value;
+                ++received;
+            }
+        }
+    });
+
+    producer.join();
+    consumer.join();
+
+    assert(actualSum == expectedSum);
+    std::cout << "PASS: sum = " << actualSum << "\\n";
+    return 0;
+}`,
+  solution: `#include <atomic>
+#include <array>
+
+template <typename T, size_t Capacity>
+class SPSCRingBuffer {
+    static_assert((Capacity & (Capacity - 1)) == 0, "Capacity must be power of two");
+    std::array<T, Capacity> buf_;
+    std::atomic<size_t> head_{0}; // consumer reads here
+    std::atomic<size_t> tail_{0}; // producer writes here
+
+public:
+    bool push(const T& item) {
+        size_t tail = tail_.load(std::memory_order_relaxed);
+        size_t nextTail = (tail + 1) & (Capacity - 1);
+        if (nextTail == head_.load(std::memory_order_acquire))
+            return false; // full
+        buf_[tail] = item;
+        tail_.store(nextTail, std::memory_order_release);
+        return true;
+    }
+
+    bool pop(T& item) {
+        size_t head = head_.load(std::memory_order_relaxed);
+        if (head == tail_.load(std::memory_order_acquire))
+            return false; // empty
+        item = buf_[head];
+        head_.store((head + 1) & (Capacity - 1), std::memory_order_release);
+        return true;
+    }
+};
+
+// Why it's safe: the producer only ever writes tail_ and reads head_;
+// the consumer only ever writes head_ and reads tail_. Each thread owns
+// exactly one index. release on the write publishes the slot's data
+// before the index update becomes visible; acquire on the read ensures
+// the reader sees that data once it observes the new index.`
+},
+{
+  id: "matching-engine",
+  category: "sys",
+  categoryLabel: "System Design",
+  title: "Limit Order Matching Engine",
+  difficulty: 3,
+  std: "C++17",
+  time: "45–60 min",
+  description: "Implement <b>MatchingEngine::submit(Order)</b> for a single-threaded, single-symbol limit order book. An incoming order must match against resting orders on the opposite side in strict price-time priority: it fills against the best-priced resting order first, at the resting order's price (not the incoming order's price), consuming resting orders in arrival order at a given price level until either the incoming order is fully filled or no more resting orders cross its price. Any unfilled remainder rests in the book at the incoming order's price. Return every trade generated by the call, in the order they occurred. Assume all quantities are positive integers and prices are integer ticks.",
+  followups: [
+    "How do you add O(log n) cancellation by order id without scanning the book?",
+    "How would you support IOC (immediate-or-cancel) and FOK (fill-or-kill) order types on top of this?",
+    "How does the design change if you need to support multiple symbols and multiple engine threads?",
+    "Where would you add hooks for trade/order event publication (market data out) without slowing down the matching path?",
+    "How would you test this for correctness beyond the example trades — what invariants would you assert on every call?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <vector>
+#include <cstdint>
+
+enum class Side { Buy, Sell };
+
+struct Order {
+    uint64_t id;
+    Side side;
+    int64_t price; // ticks
+    int64_t qty;
+};
+
+struct Trade {
+    uint64_t buyId;
+    uint64_t sellId;
+    int64_t price;
+    int64_t qty;
+};
+
+class MatchingEngine {
+public:
+    // TODO: match 'incoming' against the resting book; append resulting
+    // trades to the returned vector; rest any remaining quantity.
+    std::vector<Trade> submit(Order incoming);
+};
+
+int main() {
+    MatchingEngine engine;
+
+    engine.submit({1, Side::Buy, 10050, 100});  // rests, no trade
+    engine.submit({2, Side::Sell, 10075, 50});  // rests, no trade (no cross)
+
+    auto trades = engine.submit({3, Side::Sell, 10040, 60}); // crosses bid@10050
+    assert(trades.size() == 1);
+    assert(trades[0].buyId == 1 && trades[0].sellId == 3);
+    assert(trades[0].price == 10050); // trade executes at the RESTING order's price
+    assert(trades[0].qty == 60);
+    // order 1 has 40 left resting
+
+    auto trades2 = engine.submit({4, Side::Buy, 10075, 100}); // crosses ask@10075
+    assert(trades2.size() == 1);
+    assert(trades2[0].buyId == 4 && trades2[0].sellId == 2);
+    assert(trades2[0].qty == 50);
+    // order 4 has 50 left, rests as new best bid @10075
+
+    auto trades3 = engine.submit({5, Side::Sell, 10050, 200}); // sweeps remaining bids
+    assert(trades3.size() == 2);
+    assert(trades3[0].buyId == 4 && trades3[0].qty == 50); // better price fills first
+    assert(trades3[1].buyId == 1 && trades3[1].qty == 40);
+
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <map>
+#include <deque>
+#include <functional>
+#include <algorithm>
+
+class MatchingEngine {
+    std::map<int64_t, std::deque<Order>, std::greater<int64_t>> bids_;
+    std::map<int64_t, std::deque<Order>, std::less<int64_t>> asks_;
+
+    template <typename Book>
+    void matchAgainst(Book& book, Order& incoming, bool incomingIsBuy,
+                       std::vector<Trade>& trades) {
+        while (incoming.qty > 0 && !book.empty()) {
+            auto it = book.begin();
+            int64_t bookPrice = it->first;
+            bool crosses = incomingIsBuy ? (incoming.price >= bookPrice)
+                                          : (incoming.price <= bookPrice);
+            if (!crosses) break;
+
+            auto& queue = it->second;
+            while (incoming.qty > 0 && !queue.empty()) {
+                Order& resting = queue.front();
+                int64_t tradedQty = std::min(incoming.qty, resting.qty);
+
+                Trade t;
+                t.price = bookPrice; // resting order sets the price
+                t.qty = tradedQty;
+                if (incomingIsBuy) { t.buyId = incoming.id; t.sellId = resting.id; }
+                else               { t.buyId = resting.id;  t.sellId = incoming.id; }
+                trades.push_back(t);
+
+                incoming.qty -= tradedQty;
+                resting.qty -= tradedQty;
+                if (resting.qty == 0) queue.pop_front();
+            }
+            if (queue.empty()) book.erase(it);
+        }
+    }
+
+public:
+    std::vector<Trade> submit(Order incoming) {
+        std::vector<Trade> trades;
+        if (incoming.side == Side::Buy) matchAgainst(asks_, incoming, true, trades);
+        else                            matchAgainst(bids_, incoming, false, trades);
+
+        if (incoming.qty > 0) {
+            if (incoming.side == Side::Buy) bids_[incoming.price].push_back(incoming);
+            else                            asks_[incoming.price].push_back(incoming);
+        }
+        return trades;
+    }
+};
+
+// Follow-ups an interviewer will likely ask: how do you support order
+// cancellation in O(log n) (hint: store list iterators in a side map
+// keyed by order id), and how does this change for IOC/FOK orders?`
+},
+{
+  id: "treiber-stack",
+  category: "conc",
+  categoryLabel: "Concurrency",
+  title: "Lock-Free Stack (Treiber Stack)",
+  difficulty: 3,
+  std: "C++11",
+  time: "35–45 min",
+  description: "Implement <b>LockFreeStack&lt;T&gt;</b>, a LIFO stack that any number of threads can push to and pop from concurrently, without using a mutex anywhere in push or pop. <b>push(value)</b> always succeeds; <b>pop(out)</b> writes the top value into <b>out</b> and returns true, or returns false if the stack is empty. Under many threads pushing and popping simultaneously, no value may be lost, duplicated, or corrupted, and the sum of all successfully popped values must equal the sum of all pushed values.",
+  followups: [
+    "What is the ABA problem, and can you construct a scenario where it would corrupt this stack?",
+    "Why is calling delete on a popped node unsafe under real concurrent access, even though the given solution does it — what would you do instead in production (hazard pointers, epoch-based reclamation, a garbage-collected language)?",
+    "What's the difference between compare_exchange_weak and compare_exchange_strong, and why is weak preferred inside a retry loop?",
+    "How would you extend this to support a lock-free size() or peek()?"
+  ],
+  runner: `#include <atomic>
+#include <thread>
+#include <vector>
+#include <iostream>
+#include <cassert>
+
+template <typename T>
+class LockFreeStack {
+public:
+    void push(T value);   // TODO
+    bool pop(T& out);     // TODO
+};
+
+int main() {
+    LockFreeStack<int> stack;
+    const int threads = 8, itemsPerThread = 10000;
+
+    std::vector<std::thread> producers;
+    for (int t = 0; t < threads; ++t)
+        producers.emplace_back([&] {
+            for (int i = 0; i < itemsPerThread; ++i) stack.push(1);
+        });
+    for (auto& th : producers) th.join();
+
+    int popped = 0, value;
+    while (stack.pop(value)) { popped += value; }
+    assert(popped == threads * itemsPerThread);
+    std::cout << "PASS: popped = " << popped << "\n";
+    return 0;
+}`,
+  solution: `#include <atomic>
+
+template <typename T>
+class LockFreeStack {
+    struct Node {
+        T value;
+        Node* next;
+    };
+    std::atomic<Node*> head_{nullptr};
+
+public:
+    void push(T value) {
+        Node* node = new Node{std::move(value), head_.load(std::memory_order_relaxed)};
+        while (!head_.compare_exchange_weak(node->next, node,
+                                             std::memory_order_release,
+                                             std::memory_order_relaxed)) {
+            // on failure, node->next is updated to the current head_; retry
+        }
+    }
+
+    bool pop(T& out) {
+        Node* old = head_.load(std::memory_order_acquire);
+        while (old && !head_.compare_exchange_weak(old, old->next,
+                                                     std::memory_order_acquire,
+                                                     std::memory_order_relaxed)) {
+            // on failure, old is updated to the current head_; retry
+        }
+        if (!old) return false;
+        out = std::move(old->value);
+        delete old; // interview-answer simplification: unsafe under
+                     // concurrent pop() in production, see note above
+        return true;
+    }
+};`
+},
+{
+  id: "atomic-refcount-ptr",
+  category: "conc",
+  categoryLabel: "Concurrency",
+  title: "Thread-Safe Reference-Counted Pointer",
+  difficulty: 3,
+  std: "C++11",
+  time: "35–45 min",
+  description: "Implement a minimal thread-safe reference-counted smart pointer, <b>RefPtr&lt;T&gt;</b>, supporting construction from a raw <b>new</b>'d <b>T*</b>, copy construction/assignment, move construction/assignment, and destruction. The pointee must be destroyed exactly once, at the moment the last RefPtr referencing it is destroyed or reassigned &mdash; correctly, even when many threads are simultaneously copying, assigning, and destroying RefPtr instances that alias the same object.",
+  followups: [
+    "Why does the increment (adding a reference) only need relaxed ordering, while the decrement that might trigger delete needs acquire/release?",
+    "How does this compare to how std::shared_ptr is actually implemented (control block layout, weak_ptr support, make_shared)?",
+    "How would you add weak_ptr-style support — a reference that doesn't keep the object alive?",
+    "What's the performance cost of an atomic refcount vs. a plain int, and when does that cost matter enough to avoid shared ownership entirely?"
+  ],
+  runner: `#include <iostream>
+#include <cassert>
+#include <thread>
+#include <vector>
+#include <atomic>
+
+std::atomic<int> liveCount{0};
+
+struct Widget {
+    Widget() { ++liveCount; }
+    ~Widget() { --liveCount; }
+    int value = 42;
+};
+
+template <typename T>
+class RefPtr {
+public:
+    explicit RefPtr(T* raw = nullptr);          // TODO
+    RefPtr(const RefPtr& other);                // TODO
+    RefPtr(RefPtr&& other) noexcept;            // TODO
+    RefPtr& operator=(const RefPtr& other);     // TODO
+    RefPtr& operator=(RefPtr&& other) noexcept; // TODO
+    ~RefPtr();                                  // TODO
+    T* get() const;                             // TODO
+    T& operator*() const { return *get(); }
+    T* operator->() const { return get(); }
+};
+
+int main() {
+    {
+        RefPtr<Widget> original(new Widget());
+        assert(liveCount.load() == 1);
+
+        std::vector<std::thread> threads;
+        for (int i = 0; i < 16; ++i) {
+            threads.emplace_back([original] {
+                for (int j = 0; j < 1000; ++j) {
+                    RefPtr<Widget> copy = original; // concurrent copy + destroy
+                    assert(copy->value == 42);
+                }
+            });
+        }
+        for (auto& t : threads) t.join();
+        assert(liveCount.load() == 1); // only 'original' still alive
+    }
+    assert(liveCount.load() == 0); // destroyed exactly once
+    std::cout << "PASS\\n";
+    return 0;
+}`,
+  solution: `#include <atomic>
+
+template <typename T>
+class RefPtr {
+    T* ptr_ = nullptr;
+    std::atomic<int>* refCount_ = nullptr;
+
+    void release() {
+        if (refCount_ && refCount_->fetch_sub(1, std::memory_order_acq_rel) == 1) {
+            delete ptr_;
+            delete refCount_;
+        }
+    }
+
+public:
+    explicit RefPtr(T* raw = nullptr)
+        : ptr_(raw), refCount_(raw ? new std::atomic<int>(1) : nullptr) {}
+
+    RefPtr(const RefPtr& other) : ptr_(other.ptr_), refCount_(other.refCount_) {
+        if (refCount_) refCount_->fetch_add(1, std::memory_order_relaxed);
+    }
+
+    RefPtr(RefPtr&& other) noexcept : ptr_(other.ptr_), refCount_(other.refCount_) {
+        other.ptr_ = nullptr;
+        other.refCount_ = nullptr;
+    }
+
+    RefPtr& operator=(const RefPtr& other) {
+        if (this != &other) {
+            if (other.refCount_) other.refCount_->fetch_add(1, std::memory_order_relaxed);
+            release();
+            ptr_ = other.ptr_;
+            refCount_ = other.refCount_;
+        }
+        return *this;
+    }
+
+    RefPtr& operator=(RefPtr&& other) noexcept {
+        if (this != &other) {
+            release();
+            ptr_ = other.ptr_;
+            refCount_ = other.refCount_;
+            other.ptr_ = nullptr;
+            other.refCount_ = nullptr;
+        }
+        return *this;
+    }
+
+    ~RefPtr() { release(); }
+    T* get() const { return ptr_; }
+    T* operator->() const { return ptr_; }
+};
+
+// fetch_sub uses acq_rel: release ordering ensures every access made
+// through this RefPtr happens-before the count could hit zero; acquire
+// ordering on whichever thread's decrement actually hits zero ensures
+// it sees every other thread's writes before it destroys the pointee.`
+}
+];
+
+const CATEGORIES = [
+  { key: "all", label: "All" },
+  { key: "ds", label: "Data Structures" },
+  { key: "conc", label: "Concurrency" },
+  { key: "sys", label: "System Design" },
+  { key: "quant", label: "Quant Subject Matter" },
+];
+
+let activeCategory = "all";
+
+function dots(n, max) {
+  let s = "";
+  for (let i = 0; i < max; i++) s += i < n ? "●" : "<span class='off'>●</span>";
+  return s;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function render() {
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = CATEGORIES.map(c =>
+    `<button data-cat="${c.key}" class="${c.key === activeCategory ? 'active' : ''}">${c.label}</button>`
+  ).join("");
+  tabsEl.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeCategory = btn.dataset.cat;
+      render();
+    });
+  });
+
+  const list = document.getElementById("list");
+  const visible = EXERCISES.filter(e => activeCategory === "all" || e.category === activeCategory);
+  document.getElementById("stat-total").textContent = EXERCISES.length;
+
+  list.innerHTML = visible.map((ex, i) => `
+    <div class="exercise" data-id="${ex.id}">
+      <div class="ex-head">
+        <span class="ex-index">${String(i + 1).padStart(2, "0")}</span>
+        <span class="ex-title">${ex.title}<span class="cat-tag">${ex.categoryLabel}</span></span>
+        <span class="ex-badges">
+          <span class="dots">${dots(ex.difficulty, 3)}</span>
+          <span class="time-badge">${ex.time || ""}</span>
+          <span class="std-badge">${ex.std}</span>
+        </span>
+        <span class="caret">▸</span>
+      </div>
+      <div class="ex-body">
+        <div class="desc">${ex.description}</div>
+
+        <div class="block-label">Test Runner</div>
+        <div class="code-wrap">
+          <button class="copy-btn" data-code-id="${ex.id}-runner">Copy</button>
+          <pre><code id="${ex.id}-runner">${escapeHtml(ex.runner)}</code></pre>
+        </div>
+
+        <button class="solution-toggle" data-id="${ex.id}">Show solution</button>
+        <div class="solution-wrap" id="${ex.id}-solwrap">
+          <div class="code-wrap">
+            <button class="copy-btn" data-code-id="${ex.id}-solution">Copy</button>
+            <pre><code id="${ex.id}-solution">${escapeHtml(ex.solution)}</code></pre>
+          </div>
+        </div>
+
+        ${(ex.followups && ex.followups.length) ? `
+        <div class="block-label">Possible Follow-Ups</div>
+        <ul class="followups">
+          ${ex.followups.map(f => `<li>${f}</li>`).join("")}
+        </ul>` : ""}
+      </div>
+    </div>
+  `).join("");
+
+  list.querySelectorAll(".ex-head").forEach(head => {
+    head.addEventListener("click", () => {
+      head.parentElement.classList.toggle("open");
+    });
+  });
+
+  list.querySelectorAll(".solution-toggle").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const wrap = document.getElementById(btn.dataset.id + "-solwrap");
+      const shown = wrap.classList.toggle("shown");
+      btn.textContent = shown ? "Hide solution" : "Show solution";
+    });
+  });
+
+  list.querySelectorAll(".copy-btn").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const codeEl = document.getElementById(btn.dataset.codeId);
+      try {
+        await navigator.clipboard.writeText(codeEl.textContent);
+        btn.textContent = "Copied";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1400);
+      } catch (err) {
+        btn.textContent = "Failed";
+        setTimeout(() => { btn.textContent = "Copy"; }, 1400);
+      }
+    });
+  });
+}
+
+render();
+</script>
+</body>
+</html>
